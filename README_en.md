@@ -13,7 +13,7 @@
   </p>
 
   <p>
-    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
+    <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License">
     <img src="https://img.shields.io/badge/Version-v0.5.1--root-006A60.svg" alt="Version">
     <img src="https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84.svg" alt="Platform">
     <img src="https://img.shields.io/badge/Built%20with-Jetpack%20Compose%20%26%20Material%203-4285F4.svg" alt="Built with">
@@ -175,4 +175,4 @@ app/src/main/java/app/sidereply/
 
 ## 📄 License
 
-Licensed under the [MIT License](LICENSE).
+Licensed under the [GNU General Public License v3.0](LICENSE).
