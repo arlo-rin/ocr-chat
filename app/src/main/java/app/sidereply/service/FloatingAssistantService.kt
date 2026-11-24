@@ -56,7 +56,7 @@ import app.sidereply.root.RootManager
 import app.sidereply.root.RootShell
 import app.sidereply.root.WindowFocusProbe
 import app.sidereply.ui.SheetRootLayout
-import app.sidereply.ui.materialDynamicContext
+import app.sidereply.ui.materialContext
 import com.google.android.material.color.MaterialColors
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
@@ -415,7 +415,7 @@ class FloatingAssistantService : Service() {
     private fun buildBubbleView(): View {
         // The touch window stays 48dp. The visible mark is a 28dp theme-colored disc
         // with a 2dp white ring so it stays readable on top of another app.
-        val ui = materialDynamicContext()
+        val ui = materialContext()
         val container = BubbleView(ui).apply {
             isClickable = true
             isFocusable = true
@@ -868,7 +868,7 @@ class FloatingAssistantService : Service() {
     private fun ensureSheet(): SheetRootLayout? {
         sheetView?.let { return it }
         val root = try {
-            LayoutInflater.from(materialDynamicContext())
+            LayoutInflater.from(materialContext())
                 .inflate(R.layout.view_reply_sheet, null) as SheetRootLayout
         } catch (e: Exception) {
             Log.w(TAG, "Could not inflate reply sheet", e)
@@ -1130,7 +1130,7 @@ class FloatingAssistantService : Service() {
     }
 
     private fun themeColor(attr: Int): Int =
-        MaterialColors.getColor(materialDynamicContext(), attr, 0xFF096B5A.toInt())
+        MaterialColors.getColor(materialContext(), attr, 0xFF096B5A.toInt())
 
     private fun copyReply(text: String) {
         val clipboard = getSystemService(ClipboardManager::class.java)

@@ -60,13 +60,15 @@
 
         <item name="shapeAppearanceCornerExtraSmall">@style/ShapeAppearance.SideReply.ExtraSmall</item>
         <item name="shapeAppearanceCornerSmall">@style/ShapeAppearance.SideReply.Small</item>
-        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.SideReply.Medium</item>
-        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.SideReply.Large</item>
-        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.SideReply.ExtraLarge</item>
+        <item name="shapeAppearanceCornerMedium">@style/ShapeAppearance.SideReply.Control</item>
+        <item name="shapeAppearanceCornerLarge">@style/ShapeAppearance.SideReply.Card</item>
+        <item name="shapeAppearanceCornerExtraLarge">@style/ShapeAppearance.SideReply.Sheet</item>
 
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
-        <item name="textInputStyle">@style/Widget.Material3.TextInputLayout.OutlinedBox</item>
+        <item name="textInputStyle">@style/Widget.SideReply.TextInput</item>
         <item name="materialSwitchStyle">@style/Widget.Material3.CompoundButton.MaterialSwitch</item>
+        <item name="materialCardViewStyle">@style/Widget.SideReply.Card</item>
+        <item name="chipStyle">@style/Widget.SideReply.Chip</item>
 
         <item name="materialButtonStyle">@style/Widget.SideReply.Button</item>
     </style>
@@ -86,40 +88,68 @@
         <item name="cornerSize">8dp</item>
     </style>
 
-    <style name="ShapeAppearance.SideReply.Medium" parent="ShapeAppearance.Material3.Corner.Medium">
+    <!-- Controls: buttons, fields, chips. Cards sit one step larger. Sheets are the only 28dp surface. -->
+    <style name="ShapeAppearance.SideReply.Control" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">12dp</item>
+        <item name="cornerSize">@dimen/shape_control</item>
     </style>
 
-    <style name="ShapeAppearance.SideReply.Large" parent="ShapeAppearance.Material3.Corner.Large">
+    <style name="ShapeAppearance.SideReply.Card" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">16dp</item>
+        <item name="cornerSize">@dimen/shape_card</item>
     </style>
 
-    <style name="ShapeAppearance.SideReply.ExtraLarge" parent="ShapeAppearance.Material3.Corner.ExtraLarge">
+    <style name="ShapeAppearance.SideReply.Sheet" parent="">
         <item name="cornerFamily">rounded</item>
-        <item name="cornerSize">28dp</item>
+        <item name="cornerSize">@dimen/shape_sheet</item>
     </style>
 
-    <!-- Full-width actions. The stock button caps width at 320dp. -->
+    <style name="Widget.SideReply.Card" parent="Widget.Material3.CardView.Filled">
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLow</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Card</item>
+    </style>
+
+    <style name="Widget.SideReply.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">@dimen/shape_control</item>
+        <item name="boxCornerRadiusTopEnd">@dimen/shape_control</item>
+        <item name="boxCornerRadiusBottomStart">@dimen/shape_control</item>
+        <item name="boxCornerRadiusBottomEnd">@dimen/shape_control</item>
+    </style>
+
+    <style name="Widget.SideReply.Chip" parent="Widget.Material3.Chip.Assist">
+        <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
+        <item name="chipCornerRadius">@dimen/shape_control</item>
+        <item name="chipMinHeight">32dp</item>
+        <item name="chipStrokeWidth">0dp</item>
+        <item name="ensureMinTouchTargetSize">false</item>
+        <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+    </style>
+
+    <!-- Full-width actions. The stock button is a pill and caps width at 320dp. -->
     <style name="Widget.SideReply.Button" parent="Widget.Material3.Button">
         <item name="android:maxWidth">2000dp</item>
         <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
     </style>
 
     <style name="Widget.SideReply.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:maxWidth">2000dp</item>
         <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
     </style>
 
     <style name="Widget.SideReply.Button.Text" parent="Widget.Material3.Button.TextButton">
         <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
     </style>
 
     <style name="Widget.SideReply.Button.Icon" parent="Widget.Material3.Button.IconButton">
         <item name="android:minWidth">@dimen/touch_target</item>
         <item name="android:minHeight">@dimen/touch_target</item>
         <item name="iconSize">24dp</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
     </style>
 
 </resources>
