@@ -8,6 +8,11 @@
   </p>
 
   <p>
+    <a href="README.md">简体中文</a> ·
+    <a href="README_en.md">English</a>
+  </p>
+
+  <p>
     <img src="https://img.shields.io/badge/Version-v0.5.1--root-006A60.svg" alt="Version">
     <img src="https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84.svg" alt="Platform">
     <img src="https://img.shields.io/badge/Built%20with-Jetpack%20Compose%20%26%20Material%203-4285F4.svg" alt="Built with">
