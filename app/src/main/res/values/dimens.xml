@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="space_screen">16dp</dimen>
+    <dimen name="space_section">24dp</dimen>
+    <dimen name="space_inner">12dp</dimen>
+    <dimen name="space_tight">8dp</dimen>
+    <dimen name="touch_target">48dp</dimen>
+    <dimen name="shape_large">16dp</dimen>
+    <dimen name="shape_extra_large">28dp</dimen>
+</resources>

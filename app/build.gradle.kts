@@ -44,6 +44,7 @@ android {
 
 dependencies {
     // No on-device ML: the screenshot goes to the configured vision model instead.
+    implementation("com.google.android.material:material:1.14.0")
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.json:json:20231013")
 }
