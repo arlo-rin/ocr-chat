@@ -197,6 +197,7 @@ fun SideReplyApp(
                     state = state,
                     contentPadding = innerPadding,
                     onToggleService = onToggleService,
+                    onWechatOnlyChange = onWechatOnlyChange,
                     onOpenModelTab = { onSelectTab(MainTab.MODEL) },
                     onOpenRootCommands = onOpenRootCommands,
                     onCopySampleReply = onCopySampleReply,

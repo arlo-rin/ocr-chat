@@ -107,10 +107,13 @@ fun resolveSideReplyColorScheme(
     dynamicColor: Boolean,
 ): ColorScheme {
     val darkTheme = isDarkModeActive(context, themeMode)
+    val fallback = if (darkTheme) SideReplyDarkColorScheme else SideReplyLightColorScheme
     return if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        runCatching {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        }.getOrDefault(fallback)
     } else {
-        if (darkTheme) SideReplyDarkColorScheme else SideReplyLightColorScheme
+        fallback
     }
 }
 
@@ -127,12 +130,13 @@ fun SideReplyTheme(
         AppPreferences.ThemeMode.DARK -> true
     }
     val context = LocalContext.current
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+    val fallback = if (darkTheme) SideReplyDarkColorScheme else SideReplyLightColorScheme
+    val colorScheme = if (dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        runCatching {
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> SideReplyDarkColorScheme
-        else -> SideReplyLightColorScheme
+        }.getOrDefault(fallback)
+    } else {
+        fallback
     }
 
     MaterialTheme(

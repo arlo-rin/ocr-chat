@@ -20,6 +20,10 @@
     <string name="service_off_desc">启动后将在微信聊天侧边出现悬浮球。首次启动会通过 Root 自动配置悬浮窗与使用情况权限，全程不使用无障碍服务。</string>
     <string name="service_on_title">Root 悬浮球运行中</string>
     <string name="service_on_desc">切回微信聊天界面，轻点侧边悬浮球即可识图生成 3 条自然回复；长按拖动可贴合左右边缘。</string>
+    <string name="service_on_desc_wechat_only">悬浮球在本页和桌面会自动隐藏。请打开微信即可看到侧边悬浮球；若要在其他应用测试，请点下方「所有应用可用」。</string>
+    <string name="service_on_desc_all_apps">悬浮球已允许在微信及其他应用显示（本页和桌面除外），切至任意其他应用即可看到侧边悬浮球。</string>
+    <string name="scope_chip_wechat">仅在微信显示</string>
+    <string name="scope_chip_all_apps">所有应用可用</string>
     <string name="service_restricted_hint">需要 Magisk / KernelSU 等 Root 管理器。侧答仅执行下列 3 类固定命令，不申请无障碍权限，也不读取应用控件树。</string>
     <string name="overlay_start">启动悬浮球</string>
     <string name="overlay_stop">停止悬浮球</string>

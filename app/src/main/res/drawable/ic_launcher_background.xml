@@ -5,16 +5,29 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path android:pathData="M0,0h108v108h-108z">
+    <!-- Luminous Material Design 3 surface container canvas -->
+    <path android:pathData="M0,0H108V108H0Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:endColor="#FF12856F"
-                android:endX="96"
+                android:endColor="#FFE5F5F0"
+                android:endX="108"
                 android:endY="108"
-                android:startColor="#FF05473E"
-                android:startX="8"
+                android:startColor="#FFFFFFFF"
+                android:startX="0"
                 android:startY="0"
                 android:type="linear" />
+        </aapt:attr>
+    </path>
+    <!-- Soft radial tonal bloom for subtle Material 3 depth -->
+    <path android:pathData="M0,0H108V108H0Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="32"
+                android:centerY="28"
+                android:endColor="#00FFFFFF"
+                android:gradientRadius="68"
+                android:startColor="#80FFFFFF"
+                android:type="radial" />
         </aapt:attr>
     </path>
 </vector>

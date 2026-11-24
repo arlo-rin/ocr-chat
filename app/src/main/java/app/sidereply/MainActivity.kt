@@ -144,11 +144,13 @@ class MainActivity : ComponentActivity() {
 
     override fun onResume() {
         super.onResume()
+        isForeground = true
         refreshRootServiceStatus()
         refreshSavedKeyState()
     }
 
     override fun onPause() {
+        isForeground = false
         if (uiState.keyVisible) {
             uiState = uiState.copy(keyVisible = false)
         }
@@ -156,6 +158,7 @@ class MainActivity : ComponentActivity() {
     }
 
     override fun onDestroy() {
+        isForeground = false
         worker.shutdownNow()
         super.onDestroy()
     }
@@ -485,5 +488,9 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private const val REQUEST_NOTIFICATIONS = 2001
+
+        @Volatile
+        var isForeground: Boolean = false
+            private set
     }
 }

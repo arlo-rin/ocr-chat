@@ -1,24 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Reply sheet. Kept inside the 66dp adaptive-icon safe circle. -->
+
+    <!-- Back-left incoming chat bubble (Material 3 PrimaryContainer tonal mint) -->
+    <path android:pathData="M38.5,32.5H50.5A10.5,10.5 0 0 1 61,43V46A10.5,10.5 0 0 1 50.5,56.5H31.2A3.2,3.2 0 0 1 28,53.3V43A10.5,10.5 0 0 1 38.5,32.5Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endColor="#FF3DCAB7"
+                android:endX="61"
+                android:endY="56.5"
+                android:startColor="#FF86F0DF"
+                android:startX="28"
+                android:startY="32.5"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
+
+    <!-- Front-right SideReply AI bubble (Material 3 Primary Jade Teal) -->
+    <path android:pathData="M54.5,46H68.5A11.5,11.5 0 0 1 80,57.5V71A3.5,3.5 0 0 1 76.5,74.5H54.5A11.5,11.5 0 0 1 43,63V57.5A11.5,11.5 0 0 1 54.5,46Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endColor="#FF005B52"
+                android:endX="80"
+                android:endY="74.5"
+                android:startColor="#FF008C7E"
+                android:startX="43"
+                android:startY="46"
+                android:type="linear" />
+        </aapt:attr>
+    </path>
+
+    <!-- Signature Material Design 3 tonal overlap fold where the two bubbles intersect -->
+    <group>
+        <clip-path android:pathData="M54.5,46H68.5A11.5,11.5 0 0 1 80,57.5V71A3.5,3.5 0 0 1 76.5,74.5H54.5A11.5,11.5 0 0 1 43,63V57.5A11.5,11.5 0 0 1 54.5,46Z" />
+        <path
+            android:fillAlpha="0.56"
+            android:fillColor="#FF00403A"
+            android:pathData="M38.5,32.5H50.5A10.5,10.5 0 0 1 61,43V46A10.5,10.5 0 0 1 50.5,56.5H31.2A3.2,3.2 0 0 1 28,53.3V43A10.5,10.5 0 0 1 38.5,32.5Z" />
+    </group>
+
+    <!-- Radiant curved 4-point AI sparkle inside the reply bubble -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M57,36H71A10,10 0 0 1 81,46V62A10,10 0 0 1 71,72H57A10,10 0 0 1 47,62V46A10,10 0 0 1 57,36Z" />
+        android:pathData="M62,52C62.7,57.4 65.4,60.1 70.8,60.8C65.4,61.5 62.7,64.2 62,69.6C61.3,64.2 58.6,61.5 53.2,60.8C58.6,60.1 61.3,57.4 62,52Z" />
+
+    <!-- Companion micro-sparkle in luminous mint-white -->
     <path
-        android:fillColor="#FF096B5A"
-        android:pathData="M56,47H72A2,2 0 0 1 72,51H56A2,2 0 0 1 56,47Z" />
-    <path
-        android:fillColor="#FF127A68"
-        android:pathData="M56,56H65A2,2 0 0 1 65,60H56A2,2 0 0 1 56,56Z" />
-    <!-- Side bubble: white ring and the same mint used by the in-app primary container. -->
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:pathData="M27,54a12,12 0 1,1 24,0a12,12 0 1,1 -24,0Z" />
-    <path
-        android:fillColor="#FFA1F2DC"
-        android:pathData="M32.5,54a6.5,6.5 0 1,1 13,0a6.5,6.5 0 1,1 -13,0Z" />
+        android:fillColor="#FFB4F8EC"
+        android:pathData="M72.2,50.6C72.45,52.45 73.35,53.35 75.2,53.6C73.35,53.85 72.45,54.75 72.2,56.6C71.95,54.75 71.05,53.85 69.2,53.6C71.05,53.35 71.95,52.45 72.2,50.6Z" />
 </vector>

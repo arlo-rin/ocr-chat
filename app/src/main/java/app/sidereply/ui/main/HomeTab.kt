@@ -77,6 +77,7 @@ fun HomeTab(
     state: MainUiState,
     contentPadding: PaddingValues,
     onToggleService: () -> Unit,
+    onWechatOnlyChange: (Boolean) -> Unit,
     onOpenModelTab: () -> Unit,
     onOpenRootCommands: () -> Unit,
     onCopySampleReply: (String) -> Unit,
@@ -95,6 +96,7 @@ fun HomeTab(
             ServiceHeroCard(
                 state = state,
                 onToggleService = onToggleService,
+                onWechatOnlyChange = onWechatOnlyChange,
             )
         }
 
@@ -122,6 +124,7 @@ fun HomeTab(
 private fun ServiceHeroCard(
     state: MainUiState,
     onToggleService: () -> Unit,
+    onWechatOnlyChange: (Boolean) -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
     val containerColor by animateColorAsState(
@@ -175,7 +178,8 @@ private fun ServiceHeroCard(
         else -> stringResource(R.string.service_state_ready)
     }
     val description = when {
-        state.serviceRunning -> stringResource(R.string.service_on_desc)
+        state.serviceRunning && state.wechatOnly -> stringResource(R.string.service_on_desc_wechat_only)
+        state.serviceRunning -> stringResource(R.string.service_on_desc_all_apps)
         else -> stringResource(R.string.service_off_desc)
     }
 
@@ -229,6 +233,67 @@ private fun ServiceHeroCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = contentColor.copy(alpha = 0.86f),
             )
+
+            AnimatedVisibility(visible = state.serviceRunning) {
+                Row(
+                    modifier = Modifier.padding(top = 12.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    val chipColors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = colors.primary,
+                        selectedLabelColor = colors.onPrimary,
+                        selectedLeadingIconColor = colors.onPrimary,
+                        containerColor = colors.surfaceContainerLowest.copy(alpha = 0.72f),
+                        labelColor = colors.onSurface,
+                    )
+                    FilterChip(
+                        selected = state.wechatOnly,
+                        onClick = { onWechatOnlyChange(true) },
+                        colors = chipColors,
+                        border = null,
+                        label = {
+                            Text(
+                                text = stringResource(R.string.scope_chip_wechat),
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        },
+                        leadingIcon = if (state.wechatOnly) {
+                            {
+                                Icon(
+                                    imageVector = SideReplyIcons.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    )
+                    FilterChip(
+                        selected = !state.wechatOnly,
+                        onClick = { onWechatOnlyChange(false) },
+                        colors = chipColors,
+                        border = null,
+                        label = {
+                            Text(
+                                text = stringResource(R.string.scope_chip_all_apps),
+                                style = MaterialTheme.typography.labelMedium,
+                            )
+                        },
+                        leadingIcon = if (!state.wechatOnly) {
+                            {
+                                Icon(
+                                    imageVector = SideReplyIcons.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(FilterChipDefaults.IconSize),
+                                )
+                            }
+                        } else {
+                            null
+                        },
+                    )
+                }
+            }
 
             AnimatedVisibility(visible = state.rootStarting) {
                 Column {

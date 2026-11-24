@@ -118,6 +118,7 @@ class FloatingAssistantService : Service() {
     private var lastCaptureAt = 0L
     private var lastUsageEventTimestamp = 0L
     private var lastUsagePollAt = 0L
+    private var sawAnyUsageEvent = false
     private var serviceReady = false
 
     // Dual-space (应用双开) support.
@@ -154,7 +155,7 @@ class FloatingAssistantService : Service() {
             } else {
                 updateForegroundPackage()
                 maybeProbeFocusedWindow()
-                if (isTargetPackage(lastForegroundPackage) && !assistantBusy) {
+                if (!MainActivity.isForeground && isTargetPackage(lastForegroundPackage) && !assistantBusy) {
                     showBubbleIfAllowed()
                 } else {
                     hideBubble()
@@ -305,15 +306,33 @@ class FloatingAssistantService : Service() {
         while (events.hasNextEvent()) {
             events.getNextEvent(event)
             if (event.eventType != UsageEvents.Event.ACTIVITY_RESUMED) continue
+            sawAnyUsageEvent = true
             if (event.timeStamp <= newestTimestamp) continue
             val pkg = event.packageName ?: continue
             newestTimestamp = event.timeStamp
             newestPackage = pkg
         }
 
+        if (newestPackage == null && firstQuery) {
+            newestPackage = runCatching {
+                usageStatsManager.queryUsageStats(
+                    UsageStatsManager.INTERVAL_BEST,
+                    now - INITIAL_USAGE_LOOKBACK_MS,
+                    now,
+                )
+                    ?.asSequence()
+                    ?.filter { !it.packageName.isNullOrBlank() && it.lastTimeUsed > 0L }
+                    ?.maxByOrNull { it.lastTimeUsed }
+                    ?.packageName
+            }.getOrNull()
+        }
+
         lastUsagePollAt = now
         if (newestPackage != null) {
             lastUsageEventTimestamp = newestTimestamp
+            if (newestPackage != lastForegroundPackage) {
+                Log.i(TAG, "UsageStats foreground: $newestPackage")
+            }
             lastForegroundPackage = newestPackage
         }
     }
@@ -353,7 +372,10 @@ class FloatingAssistantService : Service() {
     }
 
     private fun maybeProbeFocusedWindow() {
-        if (!dualSpacePresent || !prefs.dualAppSupport) return
+        val dualSpaceActive = dualSpacePresent && prefs.dualAppSupport
+        val usageStaleOutsideApp = !MainActivity.isForeground &&
+            (lastForegroundPackage.isBlank() || lastForegroundPackage == packageName || !sawAnyUsageEvent)
+        if (!dualSpaceActive && !usageStaleOutsideApp) return
         if (assistantBusy || focusProbeInFlight) return
         val now = SystemClock.uptimeMillis()
         if (now < nextFocusProbeAt) return
@@ -403,6 +425,7 @@ class FloatingAssistantService : Service() {
 
         try {
             windowManager.addView(view, params)
+            Log.i(TAG, "Floating bubble shown for $lastForegroundPackage")
         } catch (e: Exception) {
             Log.w(TAG, "Unable to add floating bubble", e)
             bubbleView = null

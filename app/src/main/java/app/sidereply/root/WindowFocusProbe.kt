@@ -22,7 +22,7 @@ data class ForegroundWindow(val packageName: String, val userId: Int) {
 object WindowFocusProbe {
 
     const val COMMAND =
-        "dumpsys window displays | grep -m 2 -E 'mCurrentFocus=|mFocusedApp='"
+        "dumpsys window displays | grep -m 6 -E 'mCurrentFocus=|mFocusedApp='"
 
     /** `u0 com.tencent.mm/com.tencent.mm.ui.LauncherUI` → user 0, package com.tencent.mm. */
     private val COMPONENT = Regex("""u(\d+)\s+([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)+)/""")
@@ -31,10 +31,12 @@ object WindowFocusProbe {
         // The focused *activity* is preferred over mCurrentFocus: transient windows such as
         // dialogs, the permission controller or an IME can own the focus while the user is
         // still reading the chat behind them, and hiding the bubble for those would flicker.
+        // Scan every matching line so a secondary display reporting `=null` cannot shadow display 0.
         for (key in PREFERRED_KEYS) {
-            val line = dump.lineSequence().firstOrNull { it.contains(key) } ?: continue
-            val window = parseLine(line) ?: continue
-            return window
+            val window = dump.lineSequence()
+                .filter { it.contains(key) }
+                .firstNotNullOfOrNull(::parseLine)
+            if (window != null) return window
         }
         return null
     }

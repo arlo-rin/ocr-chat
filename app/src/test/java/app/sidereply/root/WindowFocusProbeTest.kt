@@ -52,6 +52,18 @@ class WindowFocusProbeTest {
     }
 
     @Test
+    fun skipsNullDisplayAndFindsRealFocusedApp() {
+        val dump = """
+            mFocusedApp=null
+            mCurrentFocus=null
+            mCurrentFocus=Window{9a1 u0 com.tencent.mm/com.tencent.mm.ui.LauncherUI}
+            mFocusedApp=ActivityRecord{b22 u0 com.tencent.mm/.ui.LauncherUI t12}
+        """.trimIndent()
+
+        assertEquals(ForegroundWindow("com.tencent.mm", 0), WindowFocusProbe.parse(dump))
+    }
+
+    @Test
     fun handlesEmptyFocus() {
         assertNull(WindowFocusProbe.parse("mCurrentFocus=null\nmFocusedApp=null"))
     }

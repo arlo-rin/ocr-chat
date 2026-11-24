@@ -4,12 +4,13 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Back-left bubble with an exact 3dp concentric cutout around the front bubble -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M38.5,32.5H50.5A10.5,10.5 0 0 1 61,43H54.5A14.5,14.5 0 0 0 40.04,56.5H31.2A3.2,3.2 0 0 1 28,53.3V43A10.5,10.5 0 0 1 38.5,32.5Z" />
+    <!-- Front-right AI reply bubble with curved 4-point sparkle punched out -->
     <path
         android:fillColor="#FFFFFFFF"
         android:fillType="evenOdd"
-        android:pathData="M57,36H71A10,10 0 0 1 81,46V62A10,10 0 0 1 71,72H57A10,10 0 0 1 47,62V46A10,10 0 0 1 57,36Z M56,47H72A2,2 0 0 1 72,51H56A2,2 0 0 1 56,47Z M56,56H65A2,2 0 0 1 65,60H56A2,2 0 0 1 56,56Z" />
-    <path
-        android:fillColor="#FFFFFFFF"
-        android:fillType="evenOdd"
-        android:pathData="M27,54a12,12 0 1,1 24,0a12,12 0 1,1 -24,0Z M32.5,54a6.5,6.5 0 1,1 13,0a6.5,6.5 0 1,1 -13,0Z" />
+        android:pathData="M54.5,46H68.5A11.5,11.5 0 0 1 80,57.5V71A3.5,3.5 0 0 1 76.5,74.5H54.5A11.5,11.5 0 0 1 43,63V57.5A11.5,11.5 0 0 1 54.5,46Z M61.8,51.6C62.55,57.35 65.4,60.2 71.15,60.95C65.4,61.7 62.55,64.55 61.8,70.3C61.05,64.55 58.2,61.7 52.45,60.95C58.2,60.2 61.05,57.35 61.8,51.6Z" />
 </vector>

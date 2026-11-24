@@ -1,108 +1,79 @@
-# 侧答 · SideReply（Root 版）
+<div align="center">
+  <img src="docs/icon.png" alt="SideReply Logo" width="100" height="100">
 
-> 在微信里轻点侧边悬浮球，侧答通过 Root 截屏看懂当前聊天，在 Material Design 3 底部面板里递给你三条可直接发送的回复。
+  <h1>侧答 · SideReply</h1>
 
-「侧答」是一个面向 **Android 11+** 的微信 AI 回复助手（`v0.5.0-root`）。**它不使用无障碍服务**，也不内置任何本地 OCR 或机器学习模型。应用基于 **Jetpack Compose + Material Design 3（Material You）** 构建，配合已 Root 设备通过 `su` 一次性授权悬浮窗与使用情况访问权限，用 `UsageStats`（以及双开设备上的焦点窗口探测）判断前台应用；点击悬浮球时通过 `su -c screencap -p` 在内存中截屏并压缩为 JPEG，直接交给支持视觉输入的 OpenAI 兼容模型理解对话并生成三条不同语气的回复建议。
+  <p>
+    <strong>面向 Android 11+ 的微信 AI 回复助手（Root 版）——基于 Jetpack Compose 与 Material Design 3，通过内存 Root 截屏直连视觉大模型，零无障碍服务。</strong>
+  </p>
+
+  <p>
+    <img src="https://img.shields.io/badge/Version-v0.5.1--root-006A60.svg" alt="Version">
+    <img src="https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84.svg" alt="Platform">
+    <img src="https://img.shields.io/badge/Built%20with-Jetpack%20Compose%20%26%20Material%203-4285F4.svg" alt="Built with">
+    <img src="https://img.shields.io/badge/Accessibility-None%20(Root%20Only)-success.svg" alt="Zero Accessibility">
+  </p>
+
+  <p>
+    <a href="#-highlights">Highlights</a> ·
+    <a href="#-screenshots">Screenshots</a> ·
+    <a href="#-quick-start">Quick Start</a> ·
+    <a href="#-root-commands">Root Commands</a> ·
+    <a href="#-model-setup">Model Setup</a> ·
+    <a href="#-build--test">Build &amp; Test</a> ·
+    <a href="#-architecture">Architecture</a>
+  </p>
+</div>
+
+---
+
+## ✨ Highlights
+
+* **Material Design 3 / Material You 全新重构** — 主界面采用 M3 `LargeTopAppBar` + 三标签 `NavigationBar`（概览 / 模型 / 偏好），支持浅色、深色、跟随系统及 Android 12+ 壁纸动态取色，并将主题实时同步至悬浮球与悬浮面板。
+* **可交互的概览控制台** — 首页提供动态色调主控大卡、运行态一键切换显示范围芯片（`仅在微信显示` / `所有应用可用`）、权限与 AI 引擎双列 Bento 状态卡、支持切换语气的实景预览，以及随时可查的 Root 命令清单底部弹窗。
+* **零无障碍 Root 内存截屏** — 不申请 `BIND_ACCESSIBILITY_SERVICE`；点击侧边悬浮球后先移除自身悬浮窗，再通过 `su -c screencap -p` 从 stdout 读入内存并压缩为最长边 1600px 的 JPEG（不写磁盘、不入相册），直传支持 `image_url` 的视觉模型。
+* **双重前台感知 + 应用双开支持** — 以 `UsageStatsManager` 为主路径识别前台包名，在多用户双开设备或 `UsageStats` 漏报切换时自动通过 Root `WindowFocusProbe`（`dumpsys window displays`）兜底识别主用户与分身窗口（如 `u999`）。
+* **Compose M3 悬浮球与建议面板** — 悬浮球支持按压缩放与自动贴边；点击后在 `WindowManager` 中加载 Compose M3 底部面板，提供可折叠多轮 AI 对话记录、三色调建议卡片、轻触复制、底部拇指区快捷语气 `FilterChip` 与自定义风格「换一组」。
+* **视觉服务预设与本机密钥加密** — 内置 OpenAI、阿里云通义、智谱 GLM、Kimi 与本地调试 Mock 快捷预设；API Key 采用 Android Keystore `AES/GCM/NoPadding` 加密存储，并禁用云备份与明文 HTTP（本地调试回环除外）。
+
+---
+
+## 📸 Screenshots
 
 <p align="center">
-  <img src="docs/icon.png" width="96" alt="侧答图标" />
+  <img src="docs/01-main.png" width="260" alt="概览首页（Material You 浅色）" />
+  <img src="docs/02-settings-dark.png" width="260" alt="偏好与外观（深色）" />
+  <img src="docs/03-root-sheet.png" width="260" alt="Root 命令透明清单" />
 </p>
 
-<p align="center">
-  <img src="docs/01-main.png" width="270" alt="概览首页（浅色）" />
-  <img src="docs/02-settings-dark.png" width="270" alt="偏好与外观（深色）" />
-  <img src="docs/03-root-sheet.png" width="270" alt="Root 命令透明清单" />
-</p>
+---
 
-## 核心特性
+## 🚀 Quick Start
 
-### 1. Material Design 3 与 Material You 体验
-- **三标签信息架构**：主界面采用 M3 `LargeTopAppBar` + `NavigationBar`，清晰拆分为 **概览**、**模型**、**偏好** 三个页面：
-  - **概览**：服务状态主控大卡（未启动 / 配置中 / 运行中动态变色）、双列 Bento 状态卡片（悬浮窗与使用情况权限状态、当前 AI 引擎概览）、可切换语气并一键复制的交互式实景预览、三步上手指引。
-  - **模型**：横向识图模型快捷预设（OpenAI、阿里云通义、智谱 GLM、Kimi、本地调试）、`OutlinedTextField` 表单校验与内联测试反馈、API Key 按需解密查看与二次确认清除。
-  - **偏好**：M3 Expressive 分组圆角卡片与勾选开关，控制微信专属显示、应用双开支持、深浅主题（跟随系统 / 浅色 / 深色）、**Material You 动态取色**，以及可随时查阅的 **Root 命令透明清单**弹窗。
-- **动态取色悬浮球**：默认在目标应用侧边贴附 34dp 圆形悬浮球（48dp 触控热区，内嵌星芒图标），配色实时跟随当前 Material 3 主题，支持按压缩放反馈、自由拖拽与松手自动吸附左右边缘。
-- **Compose M3 悬浮建议面板**：在服务窗口内直接承载 Compose Material 3 底部面板，支持顶栏拖动手柄下滑关闭、点击遮罩关闭与系统返回键关闭：
-  - **可折叠 AI 对话记录**：请求发送后即时在顶部轮次胶囊与对话记录中展示上传截图大小与生成进度；多轮「换一组」会保留完整历史轮次，方便对比。
-  - **三条差异化建议卡片**：默认提供「自然 / 稳妥 / 轻松」三种色调容器卡片，轻触整张卡片或复制按钮即可复制到剪贴板并切换为已复制状态。
-  - **拇指热区风格调节栏**：底部固定快捷语气 `FilterChip`（更简短 / 温柔 / 严谨 / 幽默 / 礼貌委婉 / 直接一点）与自定义风格输入框，输入或点选后即可触发「换一组」。
+1. **安装 APK**：从 [Releases](https://github.com/arlo-rin/ocr_chat/releases) 下载或按下方步骤从源码编译安装 Debug APK（需 **Android 11+** 与可用的 Root 管理器，如 Magisk / KernelSU）。
+2. **启动悬浮球**：打开「侧答」，在 **概览** 页点击 **`启动悬浮球`**。首次启动缺少权限时，侧答会请求 Root 并通过 `appops` 自动授予 `SYSTEM_ALERT_WINDOW` 与 `GET_USAGE_STATS`（已有权限时不再弹窗请求 Root）。
+3. **配置视觉模型**：切换到 **模型** 页，点选顶部预设（或填写兼容 OpenAI `POST /chat/completions` 的地址、模型与 API Key），点击 **`保存设置`** 后再用 **`测试连接`** 验证。
+4. **在微信中使用**：打开微信聊天界面（悬浮球在「侧答」本页与桌面会自动隐藏；如需在其他应用调试，可在概览页点 **`所有应用可用`**），轻点侧边悬浮球即可在底部 M3 面板中一键复制建议；想换语气可点选底部风格标签或输入要求后点 **`换一组`**。
 
-### 2. Root 截屏与前台感知（零无障碍）
-- **不使用无障碍服务**：`AndroidManifest.xml` 中没有 `BIND_ACCESSIBILITY_SERVICE`，也不读取微信控件树。
-- **仅在目标应用出现**：通过 `UsageStatsManager` 检测最近恢复的 Activity，默认仅在微信（`com.tencent.mm`）前台时显示悬浮球，切回桌面或锁屏自动隐藏；可在「偏好」中关闭「仅在微信中显示」以便调试或其他聊天软件使用。
-- **支持应用双开 / 应用分身**：系统多用户双开副本对 `UsageStats` 不可见。检测到存在额外 Android 用户且开启「支持应用双开 / 分身」时，服务会通过 Root 探测全局焦点窗口（`WindowFocusProbe`），使双开微信同样能唤出悬浮球；无双开用户的设备完全跳过探测。
-- **隐私友好截屏链路**：点击悬浮球后先移除悬浮层再执行 `su -c screencap -p`，确保截图不会拍入侧答自身界面；PNG 直接通过 stdout 读入内存，缩放至最长边 1600px、压成 JPEG（质量 82）后发给视觉模型并立即回收 Bitmap，不写入相册或本地磁盘。
-- **发送者视角锁定与换一组**：系统与用户提示词强制要求以手机主人（“我”）视角生成可直接发送的回复，不会替对方接话；「换一组」会复用内存中的同一张截图并携带上一轮建议避免重复。
-- **本机密钥加密**：API Key 使用 Android Keystore AES-GCM 加密保存在应用私有偏好中，`allowBackup="false"` 并通过 `data_extraction_rules.xml` 排除云备份与设备迁移。
+> **注意**：请务必配置**支持图片输入（`image_url`）的视觉模型**。`测试连接` 仅发送简短纯文本验证地址与密钥，若所选模型不支持图片，首次点击悬浮球识图时会返回 400 错误提示。
 
-## 快速上手
+---
 
-1. 安装由源码编译的 Debug APK（见下方构建步骤）。
-2. 打开「侧答」，在 **概览** 页点击 **启动悬浮球**：
-   - 首次启动若缺少权限，会调用 Root 自动执行 `appops` 授予悬浮窗（`SYSTEM_ALERT_WINDOW`）和使用情况访问（`GET_USAGE_STATS`）权限；已有权限时不会重复弹出 Root 授权。
-   - 在 Android 13+ 上建议允许通知权限，以便系统展示「侧答正在运行」常驻前台通知。
-3. 切换到 **模型** 页，点选顶部的视觉模型预设或手动填写 **接口地址 / Base URL**、**识图模型名称** 与 **API Key**，点 **保存设置**，再点 **测试连接** 验证链路通畅。
-4. 打开微信聊天界面，轻点侧边悬浮球等待模型识图，在底部弹出的 M3 面板中点击任意一条建议复制，回到微信输入框粘贴发送。
+## 🔐 Root Commands
 
-> **重要提示**：必须使用**支持图片输入（`image_url`）的视觉模型**。内置的「测试连接」仅发送纯文本以确认地址、模型与密钥可用，无法验证模型是否具备识图能力；若模型不支持图片，第一次点小球时会返回 400 并给出明确提示。
+侧答不启动常驻 root shell，也不拼接用户输入到命令中，所有 Root 操作固定为以下三类（可在 App 内 **偏好 → Root 执行命令清单** 查看）：
 
-## 从源码构建
+| 场景 | 执行命令 | 说明 |
+| --- | --- | --- |
+| 首次权限授权 | `appops set app.sidereply SYSTEM_ALERT_WINDOW allow`<br>`appops set app.sidereply GET_USAGE_STATS allow`<br>`id` | 仅当缺少悬浮窗或使用情况权限时调用，`id` 用于校验 `uid=0`。 |
+| 点击悬浮球截屏 | `su -c screencap -p` | PNG 经 stdout 读入内存并即时解码回收，不落盘（兼容 `su 0 sh -c`）。 |
+| 焦点窗口探测 | `pm list users`<br>`dumpsys window displays \| grep -m 6 -E 'mCurrentFocus=\|mFocusedApp='` | 仅在多用户双开设备或 `UsageStats` 未捕获应用切换时触发，自动过滤 `=null` 副屏行。 |
 
-### 环境要求
-- Android Studio（本项目使用 AGP `9.4.1` / Gradle `9.6.0` / Kotlin Compose Compiler `2.2.10`）
-- Android SDK Platform 37（`compileSdk = 37`，`minSdk = 30`，`targetSdk = 36`）
-- JDK 17 或更高版本（已在 JDK 17 环境下验证）
-- 仓库根目录的 `local.properties` 需指向本机 Android SDK（`sdk.dir=...`）
+---
 
-### 构建与测试命令
+## 🤖 Model Setup
 
-Windows PowerShell：
-
-```powershell
-# 单元测试
-.\gradlew.bat :app:testDebugUnitTest
-
-# Android Lint 检查
-.\gradlew.bat :app:lintDebug
-
-# 编译 Debug APK
-.\gradlew.bat :app:assembleDebug
-
-# 安装到已连接的设备或模拟器
-adb install -r .\app\build\outputs\apk\debug\app-debug.apk
-```
-
-macOS / Linux：
-
-```bash
-./gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
-
-## Root 权限与命令透明度
-
-侧答不会启动常驻 root shell，也不拼接任何用户输入或网络内容进入 shell 命令。所有 Root 调用均固化在 [RootShell.kt](app/src/main/java/app/sidereply/root/RootShell.kt)、[RootManager.kt](app/src/main/java/app/sidereply/root/RootManager.kt) 与 [WindowFocusProbe.kt](app/src/main/java/app/sidereply/root/WindowFocusProbe.kt) 中，且可在 App 内「偏好 → Root 执行命令清单」随时查看：
-
-1. **首次权限授予**（仅当缺少对应权限时执行）：
-   ```sh
-   appops set app.sidereply SYSTEM_ALERT_WINDOW allow
-   appops set app.sidereply GET_USAGE_STATS allow
-   id
-   ```
-2. **点击悬浮球内存截屏**：
-   ```sh
-   su -c screencap -p
-   ```
-   同时兼容部分 AOSP userdebug 系统的 `su 0 sh -c` 调用形式。
-3. **双开焦点窗口探测**（仅当检测到多用户且未关闭双开开关时）：
-   ```sh
-   pm list users
-   dumpsys window displays | grep -m 2 -E 'mCurrentFocus=|mFocusedApp='
-   ```
-
-## 配置兼容的视觉模型接口
-
-侧答请求兼容 OpenAI `POST /chat/completions` 规范，`user.content` 为 `[{type:"text"}, {type:"image_url"}]` 数组（`image_url` 为 `data:image/jpeg;base64,...`）。接口地址支持填 Base URL 或完整 `/chat/completions` 地址，保存与测试时会自动补全并回显。
+请求采用 OpenAI 兼容格式，自动规范化 Base URL 与 `/chat/completions` 路径。为保障隐私，仅允许 `https://` 与本机调试地址（`10.0.2.2`、`localhost`、`127.0.0.1`）：
 
 | 服务预设 | 接口地址 | 视觉模型示例 |
 | --- | --- | --- |
@@ -112,77 +83,83 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 | Moonshot / Kimi（视觉） | `https://api.moonshot.cn/v1/chat/completions` | `moonshot-v1-8k-vision-preview` |
 | 本地调试 Mock（模拟器） | `http://10.0.2.2:8787/v1/chat/completions` | `mock-chat` |
 
-> **网络安全限制**：为保护 API Key 与聊天截图，应用强制禁止明文 HTTP（`usesCleartextTraffic="false"`），仅允许 `https://` 与本机/模拟器调试回环地址（`10.0.2.2`、`localhost`、`127.0.0.1`）。
+### 本地 Mock 服务调试
 
-### 使用本地 Mock 服务调试 UI
-
-仓库内置零依赖 Node.js mock 服务 [tools/mock-ai-server.js](tools/mock-ai-server.js)，适合无 API Key 时在模拟器或本机验证端到端请求与面板交互：
+仓库内置零依赖测试服务 [tools/mock-ai-server.js](tools/mock-ai-server.js)，可在无 API Key 时调试 UI 与截图上传流程（演示聊天页 `http://10.0.2.2:8787/demo`）：
 
 ```powershell
 node tools/mock-ai-server.js
 ```
 
-- 模拟器接口地址：`http://10.0.2.2:8787/v1/chat/completions`（也已在「模型 → 本地调试」预设中内置）
-- 模型名称：`mock-chat`（或任意非空字符串）
-- 演示聊天网页：`http://10.0.2.2:8787/demo`
+---
 
-## 权限清单
+## 🛠️ Build & Test
 
-| 权限 | 用途 |
-| --- | --- |
-| `INTERNET` | 调用你自配的视觉模型接口 |
-| `SYSTEM_ALERT_WINDOW` | 显示侧边悬浮球与 Compose 悬浮建议面板 |
-| `PACKAGE_USAGE_STATS` | 通过 `UsageStatsManager` 检测前台应用包名 |
-| `FOREGROUND_SERVICE` + `FOREGROUND_SERVICE_SPECIAL_USE` | 在离开侧答页面后维持悬浮球后台运行 |
-| `POST_NOTIFICATIONS` | 展示「侧答正在运行」常驻通知（Android 13+） |
-| **无 `BIND_ACCESSIBILITY_SERVICE`** | **完全不使用无障碍服务** |
+* **构建工具链**：AGP `9.4.1` · Gradle `9.6.0` · Kotlin Compose Compiler `2.2.10` · `compileSdk = 37` · `minSdk = 30` · `targetSdk = 36` · JDK `17+`
+* 请确保根目录 `local.properties` 中 `sdk.dir` 指向本机 Android SDK。
 
-## 项目结构
+```powershell
+# 运行 JVM 单元测试
+.\gradlew.bat :app:testDebugUnitTest
+
+# 运行 Android Lint
+.\gradlew.bat :app:lintDebug
+
+# 编译 Debug APK
+.\gradlew.bat :app:assembleDebug
+
+# 安装到已连接的设备或模拟器
+adb install -r .\app\build\outputs\apk\debug\app-debug.apk
+```
+
+---
+
+## 🧱 Architecture
 
 ```text
 app/src/main/java/app/sidereply/
-├── MainActivity.kt                      Compose 入口、状态管理、Root 授权与连接测试调度
+├── MainActivity.kt                      Compose 入口、前台状态追踪、Root 授权与连接测试
 ├── ai/
-│   ├── AiClient.kt                      OpenAI 兼容 HttpURLConnection 客户端（含图片请求体）
-│   ├── AiErrorMessages.kt               错误类型到中文提示的映射
-│   ├── EndpointNormalizer.kt            Base URL / 完整路径补全与 HTTPS 校验
+│   ├── AiClient.kt                      OpenAI 兼容 HttpURLConnection 客户端（含 image_url 请求体）
+│   ├── AiErrorMessages.kt               网络与接口错误中文提示映射
+│   ├── EndpointNormalizer.kt            Base URL 自动补全与 HTTPS/回环安全校验
 │   ├── Models.kt                        AiConfig / ReplySuggestion / AiException
-│   ├── ProviderPresets.kt               主流视觉服务一键预设与匹配
-│   ├── ReplyParser.kt                   JSON / Markdown 代码块 / 纯文本宽容解析
-│   └── ReplyPrompts.kt                  「我」发送者视角锁定、自定义风格与换一组提示词
+│   ├── ProviderPresets.kt               主流视觉大模型预设与 host 匹配
+│   ├── ReplyParser.kt                   JSON / 代码块 / 纯文本宽容解析
+│   └── ReplyPrompts.kt                  「我」发送者视角锁定、指定风格与换一组提示词
 ├── data/
-│   ├── AppPreferences.kt                配置项持久化（主题模式、动态取色、显示范围、加密密钥）
+│   ├── AppPreferences.kt                SharedPreferences 封装（显示范围、双开、主题模式、动态取色）
 │   └── SecretStore.kt                   Android Keystore AES-GCM 加解密
 ├── root/
-│   ├── RootManager.kt                   appops 授权与权限就绪检查
+│   ├── RootManager.kt                   appops 授权与权限检查
 │   ├── RootShell.kt                     su 命令执行与 stdout 内存截屏
-│   └── WindowFocusProbe.kt              dumpsys window 焦点窗口解析（双开支持）
+│   └── WindowFocusProbe.kt              dumpsys window 焦点窗口解析（多屏与双开兼容）
 ├── service/
-│   └── FloatingAssistantService.kt      前台服务、UsageStats 轮询、M3 悬浮球与 Compose 悬浮窗调度
+│   └── FloatingAssistantService.kt      前台服务、UsageStats/Root 前台识别、M3 悬浮球与 Compose 悬浮窗
 └── ui/
-    ├── SheetRootLayout.kt               悬浮面板根容器（处理系统返回键）
+    ├── SheetRootLayout.kt               悬浮窗根视图（拦截系统返回键关闭面板）
     ├── icons/SideReplyIcons.kt          Material Symbols 风格矢量图标集
     ├── main/
-    │   ├── MainUiState.kt               主界面标签与表单 UI 状态
-    │   ├── SideReplyApp.kt              M3 Scaffold、LargeTopAppBar、NavigationBar 与弹窗
-    │   ├── HomeTab.kt                   概览页（主控卡、Bento 状态卡、实景预览、上手指引）
-    │   ├── ModelTab.kt                  模型页（快捷预设、表单校验、连接测试）
-    │   └── SettingsTab.kt               偏好页（分组卡片、深浅主题、动态取色、隐私说明）
+    │   ├── MainUiState.kt               主界面标签与配置状态
+    │   ├── SideReplyApp.kt              M3 Scaffold / LargeTopAppBar / NavigationBar / 弹窗
+    │   ├── HomeTab.kt                   概览页（主控卡、范围切换芯片、Bento 状态卡、实景预览）
+    │   ├── ModelTab.kt                  模型页（预设芯片、校验表单、密钥显示/清除、连接测试）
+    │   └── SettingsTab.kt               偏好页（分组圆角卡片、深浅主题、动态取色、隐私说明）
     ├── sheet/
-    │   ├── OverlayLifecycleOwner.kt     WindowManager 悬浮窗内嵌 Compose 的生命周期宿主
-    │   ├── ReplySheetUiState.kt         悬浮面板多轮对话与状态定义
-    │   └── ReplySheetContent.kt         Compose M3 悬浮回复面板、快捷风格栏与交互动画
+    │   ├── OverlayLifecycleOwner.kt     WindowManager 悬浮窗内嵌 Compose 生命周期宿主
+    │   ├── ReplySheetUiState.kt         悬浮面板多轮对话与阶段状态
+    │   └── ReplySheetContent.kt         Compose M3 底部建议面板、对话记录与快捷风格栏
     └── theme/
         ├── Color.kt                     Material 3 浅色 / 深色 HCT 色板
         ├── Shape.kt                     M3 形状与分组圆角规范
         ├── Type.kt                      M3 排版层级
-        └── Theme.kt                     SideReplyTheme（支持动态取色与深浅模式）
+        └── Theme.kt                     SideReplyTheme（支持动态取色与安全回退）
 ```
 
-## 已知限制与注意事项
+---
 
-- **系统与权限限制**：仅支持 Android 11+，且依赖可用的 Root 管理器（如 Magisk / KernelSU）完成截屏；无 Root 环境下可正常浏览与配置界面，点击悬浮球截屏会提示找不到 `su`。
-- **安全窗口不可截屏**：若当前聊天页面被系统或 ROM 标记为 `FLAG_SECURE` 安全窗口，系统截屏可能返回纯黑画面。
-- **不自动发送、不保存记录**：侧答仅在点击「复制」后将文本写入剪贴板，由用户自行核对并手动粘贴发送；截屏和回复历史仅保存在内存中，关闭面板即清空。
-- **不申请开机自启**：手机重启或强行停止应用后，需重新进入「侧答」启动悬浮球服务。
-- **免责说明**：本项目为个人工具原型，与腾讯/微信或任何 Root 管理器无隶属关系；使用 Root 权限与第三方 AI 接口前请自行审阅源码并评估隐私风险。
+## ⚠️ Notes & Permissions
+
+* **声明权限**：`INTERNET`、`SYSTEM_ALERT_WINDOW`、`PACKAGE_USAGE_STATS`、`FOREGROUND_SERVICE`、`FOREGROUND_SERVICE_SPECIAL_USE`、`POST_NOTIFICATIONS`；**无 `BIND_ACCESSIBILITY_SERVICE`**，不申请存储、相机、通讯录或开机自启权限。
+* **隐私与安全**：整张截图仅在内存中压缩为 JPEG 后发送至你配置的 AI 服务，关闭面板即释放内存引用；若当前聊天窗口开启了 `FLAG_SECURE`，系统截屏可能返回黑屏。
+* **免责声明**：本项目为个人工具原型，不隶属于腾讯/微信或任何 Root 管理器；使用 Root 权限与第三方视觉模型前请自行审阅源码并评估对话隐私。
