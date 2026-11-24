@@ -10,10 +10,10 @@
     <path android:pathData="M38.5,32.5H50.5A10.5,10.5 0 0 1 61,43V46A10.5,10.5 0 0 1 50.5,56.5H31.2A3.2,3.2 0 0 1 28,53.3V43A10.5,10.5 0 0 1 38.5,32.5Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:endColor="#FF3DCAB7"
+                android:endColor="#FF8DB6D6"
                 android:endX="61"
                 android:endY="56.5"
-                android:startColor="#FF86F0DF"
+                android:startColor="#FFC4DEF1"
                 android:startX="28"
                 android:startY="32.5"
                 android:type="linear" />
@@ -24,10 +24,10 @@
     <path android:pathData="M54.5,46H68.5A11.5,11.5 0 0 1 80,57.5V71A3.5,3.5 0 0 1 76.5,74.5H54.5A11.5,11.5 0 0 1 43,63V57.5A11.5,11.5 0 0 1 54.5,46Z">
         <aapt:attr name="android:fillColor">
             <gradient
-                android:endColor="#FF005B52"
+                android:endColor="#FF2B516F"
                 android:endX="80"
                 android:endY="74.5"
-                android:startColor="#FF008C7E"
+                android:startColor="#FF4F7FA3"
                 android:startX="43"
                 android:startY="46"
                 android:type="linear" />
@@ -39,7 +39,7 @@
         <clip-path android:pathData="M54.5,46H68.5A11.5,11.5 0 0 1 80,57.5V71A3.5,3.5 0 0 1 76.5,74.5H54.5A11.5,11.5 0 0 1 43,63V57.5A11.5,11.5 0 0 1 54.5,46Z" />
         <path
             android:fillAlpha="0.56"
-            android:fillColor="#FF00403A"
+            android:fillColor="#FF1B3A52"
             android:pathData="M38.5,32.5H50.5A10.5,10.5 0 0 1 61,43V46A10.5,10.5 0 0 1 50.5,56.5H31.2A3.2,3.2 0 0 1 28,53.3V43A10.5,10.5 0 0 1 38.5,32.5Z" />
     </group>
 
@@ -50,6 +50,6 @@
 
     <!-- Companion micro-sparkle in luminous mint-white -->
     <path
-        android:fillColor="#FFB4F8EC"
+        android:fillColor="#FFD6EAF8"
         android:pathData="M72.2,50.6C72.45,52.45 73.35,53.35 75.2,53.6C73.35,53.85 72.45,54.75 72.2,56.6C71.95,54.75 71.05,53.85 69.2,53.6C71.05,53.35 71.95,52.45 72.2,50.6Z" />
 </vector>

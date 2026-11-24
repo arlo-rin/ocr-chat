@@ -1,98 +1,87 @@
-<div align="center">
+﻿<div align="center">
   <img src="docs/icon.png" alt="SideReply Logo" width="100" height="100">
 
-  <h1>侧答 · SideReply</h1>
+  <h1>渚х瓟 路 SideReply</h1>
 
   <p>
-    <strong>面向 Android 11+ 的微信 AI 回复助手（Root 版）——基于 Jetpack Compose 与 Material Design 3，通过内存 Root 截屏直连视觉大模型，零无障碍服务。</strong>
+    <strong>闈㈠悜 Android 11+ 鐨勫井淇?AI 鍥炲鍔╂墜锛圧oot 鐗堬級鈥斺€斿熀浜?Jetpack Compose 涓?Material Design 3锛岄€氳繃鍐呭瓨 Root 鎴睆鐩磋繛瑙嗚澶фā鍨嬶紝闆舵棤闅滅鏈嶅姟銆?/strong>
   </p>
 
   <p>
-    <a href="README.md">简体中文</a> ·
+    <a href="README.md">绠€浣撲腑鏂?/a> 路
     <a href="README_en.md">English</a>
   </p>
 
   <p>
     <img src="https://img.shields.io/badge/License-GPLv3-blue.svg" alt="License">
-    <img src="https://img.shields.io/badge/Version-v0.5.1--root-006A60.svg" alt="Version">
+    <img src="https://img.shields.io/badge/Version-v0.5.2--root-3D6783.svg" alt="Version">
     <img src="https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84.svg" alt="Platform">
     <img src="https://img.shields.io/badge/Built%20with-Jetpack%20Compose%20%26%20Material%203-4285F4.svg" alt="Built with">
     <img src="https://img.shields.io/badge/Accessibility-None%20(Root%20Only)-success.svg" alt="Zero Accessibility">
   </p>
 
   <p>
-    <a href="#-highlights">Highlights</a> ·
-    <a href="#-screenshots">Screenshots</a> ·
-    <a href="#-quick-start">Quick Start</a> ·
-    <a href="#-root-commands">Root Commands</a> ·
-    <a href="#-model-setup">Model Setup</a> ·
-    <a href="#-build--test">Build &amp; Test</a> ·
-    <a href="#-architecture">Architecture</a> ·
+    <a href="#-highlights">Highlights</a> 路
+    <a href="#-screenshots">Screenshots</a> 路
+    <a href="#-quick-start">Quick Start</a> 路
+    <a href="#-root-commands">Root Commands</a> 路
+    <a href="#-model-setup">Model Setup</a> 路
+    <a href="#-build--test">Build &amp; Test</a> 路
+    <a href="#-architecture">Architecture</a> 路
     <a href="#-license">License</a>
   </p>
 </div>
 
 ---
 
-## ✨ Highlights
+## 鉁?Highlights
 
-* **Material Design 3 / Material You 全新重构** — 主界面采用 M3 `LargeTopAppBar` + 三标签 `NavigationBar`（概览 / 模型 / 偏好），支持浅色、深色、跟随系统及 Android 12+ 壁纸动态取色，并将主题实时同步至悬浮球与悬浮面板。
-* **可交互的概览控制台** — 首页提供动态色调主控大卡、运行态一键切换显示范围芯片（`仅在微信显示` / `所有应用可用`）、权限与 AI 引擎双列 Bento 状态卡、支持切换语气的实景预览，以及随时可查的 Root 命令清单底部弹窗。
-* **零无障碍 Root 内存截屏** — 不申请 `BIND_ACCESSIBILITY_SERVICE`；点击侧边悬浮球后先移除自身悬浮窗，再通过 `su -c screencap -p` 从 stdout 读入内存并压缩为最长边 1600px 的 JPEG（不写磁盘、不入相册），直传支持 `image_url` 的视觉模型。
-* **双重前台感知 + 应用双开支持** — 以 `UsageStatsManager` 为主路径识别前台包名，在多用户双开设备或 `UsageStats` 漏报切换时自动通过 Root `WindowFocusProbe`（`dumpsys window displays`）兜底识别主用户与分身窗口（如 `u999`）。
-* **Compose M3 悬浮球与建议面板** — 悬浮球支持按压缩放与自动贴边；点击后在 `WindowManager` 中加载 Compose M3 底部面板，提供可折叠多轮 AI 对话记录、三色调建议卡片、轻触复制、底部拇指区快捷语气 `FilterChip` 与自定义风格「换一组」。
-* **视觉服务预设与本机密钥加密** — 内置 OpenAI、阿里云通义、智谱 GLM、Kimi 与本地调试 Mock 快捷预设；API Key 采用 Android Keystore `AES/GCM/NoPadding` 加密存储，并禁用云备份与明文 HTTP（本地调试回环除外）。
-
+* **Material Design 3 / Material You 鍏ㄦ柊閲嶆瀯** 鈥?涓荤晫闈㈤噰鐢?M3 `LargeTopAppBar` + 涓夋爣绛?`NavigationBar`锛堟瑙?/ 妯″瀷 / 鍋忓ソ锛夛紝鏀寔娴呰壊銆佹繁鑹层€佽窡闅忕郴缁熷強 Android 12+ 澹佺焊鍔ㄦ€佸彇鑹诧紝骞跺皢涓婚瀹炴椂鍚屾鑷虫偓娴悆涓庢偓娴潰鏉裤€?* **鍙氦浜掔殑姒傝鎺у埗鍙?* 鈥?棣栭〉鎻愪緵鍔ㄦ€佽壊璋冧富鎺уぇ鍗°€佽繍琛屾€佷竴閿垏鎹㈡樉绀鸿寖鍥磋姱鐗囷紙`浠呭湪寰俊鏄剧ず` / `鎵€鏈夊簲鐢ㄥ彲鐢╜锛夈€佹潈闄愪笌 AI 寮曟搸鍙屽垪 Bento 鐘舵€佸崱銆佹敮鎸佸垏鎹㈣姘旂殑瀹炴櫙棰勮锛屼互鍙婇殢鏃跺彲鏌ョ殑 Root 鍛戒护娓呭崟搴曢儴寮圭獥銆?* **闆舵棤闅滅 Root 鍐呭瓨鎴睆** 鈥?涓嶇敵璇?`BIND_ACCESSIBILITY_SERVICE`锛涚偣鍑讳晶杈规偓娴悆鍚庡厛绉婚櫎鑷韩鎮诞绐楋紝鍐嶉€氳繃 `su -c screencap -p` 浠?stdout 璇诲叆鍐呭瓨骞跺帇缂╀负鏈€闀胯竟 1600px 鐨?JPEG锛堜笉鍐欑鐩樸€佷笉鍏ョ浉鍐岋級锛岀洿浼犳敮鎸?`image_url` 鐨勮瑙夋ā鍨嬨€?* **鍙岄噸鍓嶅彴鎰熺煡 + 搴旂敤鍙屽紑鏀寔** 鈥?浠?`UsageStatsManager` 涓轰富璺緞璇嗗埆鍓嶅彴鍖呭悕锛屽湪澶氱敤鎴峰弻寮€璁惧鎴?`UsageStats` 婕忔姤鍒囨崲鏃惰嚜鍔ㄩ€氳繃 Root `WindowFocusProbe`锛坄dumpsys window displays`锛夊厹搴曡瘑鍒富鐢ㄦ埛涓庡垎韬獥鍙ｏ紙濡?`u999`锛夈€?* **Compose M3 鎮诞鐞冧笌寤鸿闈㈡澘** 鈥?鎮诞鐞冩敮鎸佹寜鍘嬬缉鏀句笌鑷姩璐磋竟锛涚偣鍑诲悗鍦?`WindowManager` 涓姞杞?Compose M3 搴曢儴闈㈡澘锛屾彁渚涘彲鎶樺彔澶氳疆 AI 瀵硅瘽璁板綍銆佷笁鑹茶皟寤鸿鍗＄墖銆佽交瑙﹀鍒躲€佸簳閮ㄦ媷鎸囧尯蹇嵎璇皵 `FilterChip` 涓庤嚜瀹氫箟椋庢牸銆屾崲涓€缁勩€嶃€?* **瑙嗚鏈嶅姟棰勮涓庢湰鏈哄瘑閽ュ姞瀵?* 鈥?鍐呯疆 OpenAI銆侀樋閲屼簯閫氫箟銆佹櫤璋?GLM銆並imi 涓庢湰鍦拌皟璇?Mock 蹇嵎棰勮锛汚PI Key 閲囩敤 Android Keystore `AES/GCM/NoPadding` 鍔犲瘑瀛樺偍锛屽苟绂佺敤浜戝浠戒笌鏄庢枃 HTTP锛堟湰鍦拌皟璇曞洖鐜櫎澶栵級銆?
 ---
 
-## 📸 Screenshots
+## 馃摳 Screenshots
 
 <p align="center">
-  <img src="docs/01-main.png" width="260" alt="概览首页（Material You 浅色）" />
-  <img src="docs/02-settings-dark.png" width="260" alt="偏好与外观（深色）" />
-  <img src="docs/03-root-sheet.png" width="260" alt="Root 命令透明清单" />
+  <img src="docs/01-main.png" width="260" alt="姒傝棣栭〉锛圡aterial You 娴呰壊锛? />
+  <img src="docs/02-settings-dark.png" width="260" alt="鍋忓ソ涓庡瑙傦紙娣辫壊锛? />
+  <img src="docs/03-root-sheet.png" width="260" alt="Root 鍛戒护閫忔槑娓呭崟" />
 </p>
 
 ---
 
-## 🚀 Quick Start
+## 馃殌 Quick Start
 
-1. **安装 APK**：从 [Releases](https://github.com/arlo-rin/ocr_chat/releases) 下载或按下方步骤从源码编译安装 Debug APK（需 **Android 11+** 与可用的 Root 管理器，如 Magisk / KernelSU）。
-2. **启动悬浮球**：打开「侧答」，在 **概览** 页点击 **`启动悬浮球`**。首次启动缺少权限时，侧答会请求 Root 并通过 `appops` 自动授予 `SYSTEM_ALERT_WINDOW` 与 `GET_USAGE_STATS`（已有权限时不再弹窗请求 Root）。
-3. **配置视觉模型**：切换到 **模型** 页，点选顶部预设（或填写兼容 OpenAI `POST /chat/completions` 的地址、模型与 API Key），点击 **`保存设置`** 后再用 **`测试连接`** 验证。
-4. **在微信中使用**：打开微信聊天界面（悬浮球在「侧答」本页与桌面会自动隐藏；如需在其他应用调试，可在概览页点 **`所有应用可用`**），轻点侧边悬浮球即可在底部 M3 面板中一键复制建议；想换语气可点选底部风格标签或输入要求后点 **`换一组`**。
-
-> **注意**：请务必配置**支持图片输入（`image_url`）的视觉模型**。`测试连接` 仅发送简短纯文本验证地址与密钥，若所选模型不支持图片，首次点击悬浮球识图时会返回 400 错误提示。
-
+1. **瀹夎 APK**锛氫粠 [Releases](https://github.com/arlo-rin/ocr_chat/releases) 涓嬭浇鎴栨寜涓嬫柟姝ラ浠庢簮鐮佺紪璇戝畨瑁?Debug APK锛堥渶 **Android 11+** 涓庡彲鐢ㄧ殑 Root 绠＄悊鍣紝濡?Magisk / KernelSU锛夈€?2. **鍚姩鎮诞鐞?*锛氭墦寮€銆屼晶绛斻€嶏紝鍦?**姒傝** 椤电偣鍑?**`鍚姩鎮诞鐞僠**銆傞娆″惎鍔ㄧ己灏戞潈闄愭椂锛屼晶绛斾細璇锋眰 Root 骞堕€氳繃 `appops` 鑷姩鎺堜簣 `SYSTEM_ALERT_WINDOW` 涓?`GET_USAGE_STATS`锛堝凡鏈夋潈闄愭椂涓嶅啀寮圭獥璇锋眰 Root锛夈€?3. **閰嶇疆瑙嗚妯″瀷**锛氬垏鎹㈠埌 **妯″瀷** 椤碉紝鐐归€夐《閮ㄩ璁撅紙鎴栧～鍐欏吋瀹?OpenAI `POST /chat/completions` 鐨勫湴鍧€銆佹ā鍨嬩笌 API Key锛夛紝鐐瑰嚮 **`淇濆瓨璁剧疆`** 鍚庡啀鐢?**`娴嬭瘯杩炴帴`** 楠岃瘉銆?4. **鍦ㄥ井淇′腑浣跨敤**锛氭墦寮€寰俊鑱婂ぉ鐣岄潰锛堟偓娴悆鍦ㄣ€屼晶绛斻€嶆湰椤典笌妗岄潰浼氳嚜鍔ㄩ殣钘忥紱濡傞渶鍦ㄥ叾浠栧簲鐢ㄨ皟璇曪紝鍙湪姒傝椤电偣 **`鎵€鏈夊簲鐢ㄥ彲鐢╜**锛夛紝杞荤偣渚ц竟鎮诞鐞冨嵆鍙湪搴曢儴 M3 闈㈡澘涓竴閿鍒跺缓璁紱鎯虫崲璇皵鍙偣閫夊簳閮ㄩ鏍兼爣绛炬垨杈撳叆瑕佹眰鍚庣偣 **`鎹竴缁刞**銆?
+> **娉ㄦ剰**锛氳鍔″繀閰嶇疆**鏀寔鍥剧墖杈撳叆锛坄image_url`锛夌殑瑙嗚妯″瀷**銆俙娴嬭瘯杩炴帴` 浠呭彂閫佺畝鐭函鏂囨湰楠岃瘉鍦板潃涓庡瘑閽ワ紝鑻ユ墍閫夋ā鍨嬩笉鏀寔鍥剧墖锛岄娆＄偣鍑绘偓娴悆璇嗗浘鏃朵細杩斿洖 400 閿欒鎻愮ず銆?
 ---
 
-## 🔐 Root Commands
+## 馃攼 Root Commands
 
-侧答不启动常驻 root shell，也不拼接用户输入到命令中，所有 Root 操作固定为以下三类（可在 App 内 **偏好 → Root 执行命令清单** 查看）：
+渚х瓟涓嶅惎鍔ㄥ父椹?root shell锛屼篃涓嶆嫾鎺ョ敤鎴疯緭鍏ュ埌鍛戒护涓紝鎵€鏈?Root 鎿嶄綔鍥哄畾涓轰互涓嬩笁绫伙紙鍙湪 App 鍐?**鍋忓ソ 鈫?Root 鎵ц鍛戒护娓呭崟** 鏌ョ湅锛夛細
 
-| 场景 | 执行命令 | 说明 |
+| 鍦烘櫙 | 鎵ц鍛戒护 | 璇存槑 |
 | --- | --- | --- |
-| 首次权限授权 | `appops set app.sidereply SYSTEM_ALERT_WINDOW allow`<br>`appops set app.sidereply GET_USAGE_STATS allow`<br>`id` | 仅当缺少悬浮窗或使用情况权限时调用，`id` 用于校验 `uid=0`。 |
-| 点击悬浮球截屏 | `su -c screencap -p` | PNG 经 stdout 读入内存并即时解码回收，不落盘（兼容 `su 0 sh -c`）。 |
-| 焦点窗口探测 | `pm list users`<br>`dumpsys window displays \| grep -m 6 -E 'mCurrentFocus=\|mFocusedApp='` | 仅在多用户双开设备或 `UsageStats` 未捕获应用切换时触发，自动过滤 `=null` 副屏行。 |
+| 棣栨鏉冮檺鎺堟潈 | `appops set app.sidereply SYSTEM_ALERT_WINDOW allow`<br>`appops set app.sidereply GET_USAGE_STATS allow`<br>`id` | 浠呭綋缂哄皯鎮诞绐楁垨浣跨敤鎯呭喌鏉冮檺鏃惰皟鐢紝`id` 鐢ㄤ簬鏍￠獙 `uid=0`銆?|
+| 鐐瑰嚮鎮诞鐞冩埅灞?| `su -c screencap -p` | PNG 缁?stdout 璇诲叆鍐呭瓨骞跺嵆鏃惰В鐮佸洖鏀讹紝涓嶈惤鐩橈紙鍏煎 `su 0 sh -c`锛夈€?|
+| 鐒︾偣绐楀彛鎺㈡祴 | `pm list users`<br>`dumpsys window displays \| grep -m 6 -E 'mCurrentFocus=\|mFocusedApp='` | 浠呭湪澶氱敤鎴峰弻寮€璁惧鎴?`UsageStats` 鏈崟鑾峰簲鐢ㄥ垏鎹㈡椂瑙﹀彂锛岃嚜鍔ㄨ繃婊?`=null` 鍓睆琛屻€?|
 
 ---
 
-## 🤖 Model Setup
+## 馃 Model Setup
 
-请求采用 OpenAI 兼容格式，自动规范化 Base URL 与 `/chat/completions` 路径。为保障隐私，仅允许 `https://` 与本机调试地址（`10.0.2.2`、`localhost`、`127.0.0.1`）：
+璇锋眰閲囩敤 OpenAI 鍏煎鏍煎紡锛岃嚜鍔ㄨ鑼冨寲 Base URL 涓?`/chat/completions` 璺緞銆備负淇濋殰闅愮锛屼粎鍏佽 `https://` 涓庢湰鏈鸿皟璇曞湴鍧€锛坄10.0.2.2`銆乣localhost`銆乣127.0.0.1`锛夛細
 
-| 服务预设 | 接口地址 | 视觉模型示例 |
+| 鏈嶅姟棰勮 | 鎺ュ彛鍦板潃 | 瑙嗚妯″瀷绀轰緥 |
 | --- | --- | --- |
 | OpenAI | `https://api.openai.com/v1/chat/completions` | `gpt-4o-mini` |
-| 阿里云通义（视觉） | `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions` | `qwen-vl-plus` |
-| 智谱 GLM（视觉） | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | `glm-4v-flash` |
-| Moonshot / Kimi（视觉） | `https://api.moonshot.cn/v1/chat/completions` | `moonshot-v1-8k-vision-preview` |
-| 本地调试 Mock（模拟器） | `http://10.0.2.2:8787/v1/chat/completions` | `mock-chat` |
+| 闃块噷浜戦€氫箟锛堣瑙夛級 | `https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions` | `qwen-vl-plus` |
+| 鏅鸿氨 GLM锛堣瑙夛級 | `https://open.bigmodel.cn/api/paas/v4/chat/completions` | `glm-4v-flash` |
+| Moonshot / Kimi锛堣瑙夛級 | `https://api.moonshot.cn/v1/chat/completions` | `moonshot-v1-8k-vision-preview` |
+| 鏈湴璋冭瘯 Mock锛堟ā鎷熷櫒锛?| `http://10.0.2.2:8787/v1/chat/completions` | `mock-chat` |
 
-### 本地 Mock 服务调试
+### 鏈湴 Mock 鏈嶅姟璋冭瘯
 
-仓库内置零依赖测试服务 [tools/mock-ai-server.js](tools/mock-ai-server.js)，可在无 API Key 时调试 UI 与截图上传流程（演示聊天页 `http://10.0.2.2:8787/demo`）：
+浠撳簱鍐呯疆闆朵緷璧栨祴璇曟湇鍔?[tools/mock-ai-server.js](tools/mock-ai-server.js)锛屽彲鍦ㄦ棤 API Key 鏃惰皟璇?UI 涓庢埅鍥句笂浼犳祦绋嬶紙婕旂ず鑱婂ぉ椤?`http://10.0.2.2:8787/demo`锛夛細
 
 ```powershell
 node tools/mock-ai-server.js
@@ -100,79 +89,60 @@ node tools/mock-ai-server.js
 
 ---
 
-## 🛠️ Build & Test
+## 馃洜锔?Build & Test
 
-* **构建工具链**：AGP `9.4.1` · Gradle `9.6.0` · Kotlin Compose Compiler `2.2.10` · `compileSdk = 37` · `minSdk = 30` · `targetSdk = 36` · JDK `17+`
-* 请确保根目录 `local.properties` 中 `sdk.dir` 指向本机 Android SDK。
-
+* **鏋勫缓宸ュ叿閾?*锛欰GP `9.4.1` 路 Gradle `9.6.0` 路 Kotlin Compose Compiler `2.2.10` 路 `compileSdk = 37` 路 `minSdk = 30` 路 `targetSdk = 36` 路 JDK `17+`
+* 璇风‘淇濇牴鐩綍 `local.properties` 涓?`sdk.dir` 鎸囧悜鏈満 Android SDK銆?
 ```powershell
-# 运行 JVM 单元测试
+# 杩愯 JVM 鍗曞厓娴嬭瘯
 .\gradlew.bat :app:testDebugUnitTest
 
-# 运行 Android Lint
+# 杩愯 Android Lint
 .\gradlew.bat :app:lintDebug
 
-# 编译 Debug APK
+# 缂栬瘧 Debug APK
 .\gradlew.bat :app:assembleDebug
 
-# 安装到已连接的设备或模拟器
-adb install -r .\app\build\outputs\apk\debug\app-debug.apk
+# 瀹夎鍒板凡杩炴帴鐨勮澶囨垨妯℃嫙鍣?adb install -r .\app\build\outputs\apk\debug\app-debug.apk
 ```
 
 ---
 
-## 🧱 Architecture
+## 馃П Architecture
 
 ```text
 app/src/main/java/app/sidereply/
-├── MainActivity.kt                      Compose 入口、前台状态追踪、Root 授权与连接测试
-├── ai/
-│   ├── AiClient.kt                      OpenAI 兼容 HttpURLConnection 客户端（含 image_url 请求体）
-│   ├── AiErrorMessages.kt               网络与接口错误中文提示映射
-│   ├── EndpointNormalizer.kt            Base URL 自动补全与 HTTPS/回环安全校验
-│   ├── Models.kt                        AiConfig / ReplySuggestion / AiException
-│   ├── ProviderPresets.kt               主流视觉大模型预设与 host 匹配
-│   ├── ReplyParser.kt                   JSON / 代码块 / 纯文本宽容解析
-│   └── ReplyPrompts.kt                  「我」发送者视角锁定、指定风格与换一组提示词
-├── data/
-│   ├── AppPreferences.kt                SharedPreferences 封装（显示范围、双开、主题模式、动态取色）
-│   └── SecretStore.kt                   Android Keystore AES-GCM 加解密
-├── root/
-│   ├── RootManager.kt                   appops 授权与权限检查
-│   ├── RootShell.kt                     su 命令执行与 stdout 内存截屏
-│   └── WindowFocusProbe.kt              dumpsys window 焦点窗口解析（多屏与双开兼容）
-├── service/
-│   └── FloatingAssistantService.kt      前台服务、UsageStats/Root 前台识别、M3 悬浮球与 Compose 悬浮窗
-└── ui/
-    ├── SheetRootLayout.kt               悬浮窗根视图（拦截系统返回键关闭面板）
-    ├── icons/SideReplyIcons.kt          Material Symbols 风格矢量图标集
-    ├── main/
-    │   ├── MainUiState.kt               主界面标签与配置状态
-    │   ├── SideReplyApp.kt              M3 Scaffold / LargeTopAppBar / NavigationBar / 弹窗
-    │   ├── HomeTab.kt                   概览页（主控卡、范围切换芯片、Bento 状态卡、实景预览）
-    │   ├── ModelTab.kt                  模型页（预设芯片、校验表单、密钥显示/清除、连接测试）
-    │   └── SettingsTab.kt               偏好页（分组圆角卡片、深浅主题、动态取色、隐私说明）
-    ├── sheet/
-    │   ├── OverlayLifecycleOwner.kt     WindowManager 悬浮窗内嵌 Compose 生命周期宿主
-    │   ├── ReplySheetUiState.kt         悬浮面板多轮对话与阶段状态
-    │   └── ReplySheetContent.kt         Compose M3 底部建议面板、对话记录与快捷风格栏
-    └── theme/
-        ├── Color.kt                     Material 3 浅色 / 深色 HCT 色板
-        ├── Shape.kt                     M3 形状与分组圆角规范
-        ├── Type.kt                      M3 排版层级
-        └── Theme.kt                     SideReplyTheme（支持动态取色与安全回退）
-```
+鈹溾攢鈹€ MainActivity.kt                      Compose 鍏ュ彛銆佸墠鍙扮姸鎬佽拷韪€丷oot 鎺堟潈涓庤繛鎺ユ祴璇?鈹溾攢鈹€ ai/
+鈹?  鈹溾攢鈹€ AiClient.kt                      OpenAI 鍏煎 HttpURLConnection 瀹㈡埛绔紙鍚?image_url 璇锋眰浣擄級
+鈹?  鈹溾攢鈹€ AiErrorMessages.kt               缃戠粶涓庢帴鍙ｉ敊璇腑鏂囨彁绀烘槧灏?鈹?  鈹溾攢鈹€ EndpointNormalizer.kt            Base URL 鑷姩琛ュ叏涓?HTTPS/鍥炵幆瀹夊叏鏍￠獙
+鈹?  鈹溾攢鈹€ Models.kt                        AiConfig / ReplySuggestion / AiException
+鈹?  鈹溾攢鈹€ ProviderPresets.kt               涓绘祦瑙嗚澶фā鍨嬮璁句笌 host 鍖归厤
+鈹?  鈹溾攢鈹€ ReplyParser.kt                   JSON / 浠ｇ爜鍧?/ 绾枃鏈瀹硅В鏋?鈹?  鈹斺攢鈹€ ReplyPrompts.kt                  銆屾垜銆嶅彂閫佽€呰瑙掗攣瀹氥€佹寚瀹氶鏍间笌鎹竴缁勬彁绀鸿瘝
+鈹溾攢鈹€ data/
+鈹?  鈹溾攢鈹€ AppPreferences.kt                SharedPreferences 灏佽锛堟樉绀鸿寖鍥淬€佸弻寮€銆佷富棰樻ā寮忋€佸姩鎬佸彇鑹诧級
+鈹?  鈹斺攢鈹€ SecretStore.kt                   Android Keystore AES-GCM 鍔犺В瀵?鈹溾攢鈹€ root/
+鈹?  鈹溾攢鈹€ RootManager.kt                   appops 鎺堟潈涓庢潈闄愭鏌?鈹?  鈹溾攢鈹€ RootShell.kt                     su 鍛戒护鎵ц涓?stdout 鍐呭瓨鎴睆
+鈹?  鈹斺攢鈹€ WindowFocusProbe.kt              dumpsys window 鐒︾偣绐楀彛瑙ｆ瀽锛堝灞忎笌鍙屽紑鍏煎锛?鈹溾攢鈹€ service/
+鈹?  鈹斺攢鈹€ FloatingAssistantService.kt      鍓嶅彴鏈嶅姟銆乁sageStats/Root 鍓嶅彴璇嗗埆銆丮3 鎮诞鐞冧笌 Compose 鎮诞绐?鈹斺攢鈹€ ui/
+    鈹溾攢鈹€ SheetRootLayout.kt               鎮诞绐楁牴瑙嗗浘锛堟嫤鎴郴缁熻繑鍥為敭鍏抽棴闈㈡澘锛?    鈹溾攢鈹€ icons/SideReplyIcons.kt          Material Symbols 椋庢牸鐭㈤噺鍥炬爣闆?    鈹溾攢鈹€ main/
+    鈹?  鈹溾攢鈹€ MainUiState.kt               涓荤晫闈㈡爣绛句笌閰嶇疆鐘舵€?    鈹?  鈹溾攢鈹€ SideReplyApp.kt              M3 Scaffold / LargeTopAppBar / NavigationBar / 寮圭獥
+    鈹?  鈹溾攢鈹€ HomeTab.kt                   姒傝椤碉紙涓绘帶鍗°€佽寖鍥村垏鎹㈣姱鐗囥€丅ento 鐘舵€佸崱銆佸疄鏅瑙堬級
+    鈹?  鈹溾攢鈹€ ModelTab.kt                  妯″瀷椤碉紙棰勮鑺墖銆佹牎楠岃〃鍗曘€佸瘑閽ユ樉绀?娓呴櫎銆佽繛鎺ユ祴璇曪級
+    鈹?  鈹斺攢鈹€ SettingsTab.kt               鍋忓ソ椤碉紙鍒嗙粍鍦嗚鍗＄墖銆佹繁娴呬富棰樸€佸姩鎬佸彇鑹层€侀殣绉佽鏄庯級
+    鈹溾攢鈹€ sheet/
+    鈹?  鈹溾攢鈹€ OverlayLifecycleOwner.kt     WindowManager 鎮诞绐楀唴宓?Compose 鐢熷懡鍛ㄦ湡瀹夸富
+    鈹?  鈹溾攢鈹€ ReplySheetUiState.kt         鎮诞闈㈡澘澶氳疆瀵硅瘽涓庨樁娈电姸鎬?    鈹?  鈹斺攢鈹€ ReplySheetContent.kt         Compose M3 搴曢儴寤鸿闈㈡澘銆佸璇濊褰曚笌蹇嵎椋庢牸鏍?    鈹斺攢鈹€ theme/
+        鈹溾攢鈹€ Color.kt                     Material 3 娴呰壊 / 娣辫壊 HCT 鑹叉澘
+        鈹溾攢鈹€ Shape.kt                     M3 褰㈢姸涓庡垎缁勫渾瑙掕鑼?        鈹溾攢鈹€ Type.kt                      M3 鎺掔増灞傜骇
+        鈹斺攢鈹€ Theme.kt                     SideReplyTheme锛堟敮鎸佸姩鎬佸彇鑹蹭笌瀹夊叏鍥為€€锛?```
 
 ---
 
-## ⚠️ Notes & Permissions
+## 鈿狅笍 Notes & Permissions
 
-* **声明权限**：`INTERNET`、`SYSTEM_ALERT_WINDOW`、`PACKAGE_USAGE_STATS`、`FOREGROUND_SERVICE`、`FOREGROUND_SERVICE_SPECIAL_USE`、`POST_NOTIFICATIONS`；**无 `BIND_ACCESSIBILITY_SERVICE`**，不申请存储、相机、通讯录或开机自启权限。
-* **隐私与安全**：整张截图仅在内存中压缩为 JPEG 后发送至你配置的 AI 服务，关闭面板即释放内存引用；若当前聊天窗口开启了 `FLAG_SECURE`，系统截屏可能返回黑屏。
-* **免责声明**：本项目为个人工具原型，不隶属于腾讯/微信或任何 Root 管理器；使用 Root 权限与第三方视觉模型前请自行审阅源码并评估对话隐私。
-
+* **澹版槑鏉冮檺**锛歚INTERNET`銆乣SYSTEM_ALERT_WINDOW`銆乣PACKAGE_USAGE_STATS`銆乣FOREGROUND_SERVICE`銆乣FOREGROUND_SERVICE_SPECIAL_USE`銆乣POST_NOTIFICATIONS`锛?*鏃?`BIND_ACCESSIBILITY_SERVICE`**锛屼笉鐢宠瀛樺偍銆佺浉鏈恒€侀€氳褰曟垨寮€鏈鸿嚜鍚潈闄愩€?* **闅愮涓庡畨鍏?*锛氭暣寮犳埅鍥句粎鍦ㄥ唴瀛樹腑鍘嬬缉涓?JPEG 鍚庡彂閫佽嚦浣犻厤缃殑 AI 鏈嶅姟锛屽叧闂潰鏉垮嵆閲婃斁鍐呭瓨寮曠敤锛涜嫢褰撳墠鑱婂ぉ绐楀彛寮€鍚簡 `FLAG_SECURE`锛岀郴缁熸埅灞忓彲鑳借繑鍥為粦灞忋€?* **鍏嶈矗澹版槑**锛氭湰椤圭洰涓轰釜浜哄伐鍏峰師鍨嬶紝涓嶉毝灞炰簬鑵捐/寰俊鎴栦换浣?Root 绠＄悊鍣紱浣跨敤 Root 鏉冮檺涓庣涓夋柟瑙嗚妯″瀷鍓嶈鑷瀹￠槄婧愮爜骞惰瘎浼板璇濋殣绉併€?
 ---
 
-## 📄 License
+## 馃搫 License
 
-本项目基于 [GNU General Public License v3.0](LICENSE) 开源。
+鏈」鐩熀浜?[GNU General Public License v3.0](LICENSE) 寮€婧愩€?

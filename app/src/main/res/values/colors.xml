@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="icon_bg">#005048</color>
-    <color name="window_bg_light">#F4FBF8</color>
-    <color name="window_bg_dark">#0E1513</color>
+    <color name="icon_bg">#2F5878</color>
+    <color name="window_bg_light">#F6FAFD</color>
+    <color name="window_bg_dark">#101417</color>
 </resources>
