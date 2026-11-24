@@ -235,8 +235,9 @@ class MainActivity : AppCompatActivity() {
         if (running) {
             statusPill.setText(R.string.status_running)
             styleStatus(
-                com.google.android.material.R.attr.colorPrimaryContainer,
-                com.google.android.material.R.attr.colorOnPrimaryContainer,
+                androidx.appcompat.R.attr.colorPrimary,
+                com.google.android.material.R.attr.colorOnPrimary,
+                com.google.android.material.R.attr.colorPrimaryFixedDim,
             )
             serviceTitle.setText(R.string.service_on_title)
             serviceState.setText(R.string.service_state_running)
@@ -577,10 +578,15 @@ class MainActivity : AppCompatActivity() {
     private fun colorAttr(attr: Int): Int =
         MaterialColors.getColor(this, attr, Color.BLACK)
 
-    private fun styleStatus(containerAttr: Int, labelAttr: Int) {
+    private fun styleStatus(containerAttr: Int, labelAttr: Int, strokeAttr: Int? = null) {
         statusPill.chipBackgroundColor = ColorStateList.valueOf(colorAttr(containerAttr))
         statusPill.setTextColor(colorAttr(labelAttr))
-        statusPill.chipStrokeWidth = 0f
+        if (strokeAttr == null) {
+            statusPill.chipStrokeWidth = 0f
+        } else {
+            statusPill.chipStrokeWidth = resources.displayMetrics.density
+            statusPill.chipStrokeColor = ColorStateList.valueOf(colorAttr(strokeAttr))
+        }
     }
 
     private fun applyButtonRole(button: MaterialButton, role: ButtonRole) {

@@ -31,7 +31,7 @@
             android:paddingEnd="@dimen/space_inner"
             android:paddingBottom="@dimen/space_tight"
             android:textAppearance="?attr/textAppearanceBodySmall"
-            android:textColor="?attr/colorOnPrimaryContainer" />
+            android:textColor="?attr/colorOnSurface" />
     </LinearLayout>
 
     <LinearLayout

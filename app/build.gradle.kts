@@ -12,8 +12,8 @@ android {
         applicationId = "app.sidereply"
         minSdk = 30
         targetSdk = 36
-        versionCode = 20
-        versionName = "0.4.4-root"
+        versionCode = 21
+        versionName = "0.4.5-root"
     }
 
     buildTypes {

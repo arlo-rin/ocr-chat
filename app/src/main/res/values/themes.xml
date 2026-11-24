@@ -49,6 +49,8 @@
         <item name="colorErrorContainer">@color/md_theme_errorContainer</item>
         <item name="colorOnErrorContainer">@color/md_theme_onErrorContainer</item>
 
+        <!-- Dark elevation overlay tints with colorPrimary and would green the page. -->
+        <item name="elevationOverlayEnabled">false</item>
         <item name="android:windowBackground">@color/md_theme_surface</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
@@ -66,7 +68,7 @@
 
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Material3.MaterialAlertDialog</item>
         <item name="textInputStyle">@style/Widget.SideReply.TextInput</item>
-        <item name="materialSwitchStyle">@style/Widget.Material3.CompoundButton.MaterialSwitch</item>
+        <item name="materialSwitchStyle">@style/Widget.SideReply.Switch</item>
         <item name="materialCardViewStyle">@style/Widget.SideReply.Card</item>
         <item name="chipStyle">@style/Widget.SideReply.Chip</item>
 
@@ -107,11 +109,14 @@
     <style name="Widget.SideReply.Card" parent="Widget.Material3.CardView.Filled">
         <item name="cardElevation">0dp</item>
         <item name="strokeWidth">0dp</item>
-        <item name="cardBackgroundColor">?attr/colorSurfaceContainerLow</item>
+        <item name="cardBackgroundColor">?attr/colorSurfaceContainerHigh</item>
         <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Card</item>
     </style>
 
-    <style name="Widget.SideReply.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+    <style name="Widget.SideReply.TextInput" parent="Widget.Material3.TextInputLayout.FilledBox">
+        <item name="boxBackgroundColor">?attr/colorSurfaceContainerHighest</item>
+        <item name="boxStrokeWidth">0dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
         <item name="boxCornerRadiusTopStart">@dimen/shape_control</item>
         <item name="boxCornerRadiusTopEnd">@dimen/shape_control</item>
         <item name="boxCornerRadiusBottomStart">@dimen/shape_control</item>
@@ -122,9 +127,15 @@
         <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
         <item name="chipCornerRadius">@dimen/shape_control</item>
         <item name="chipMinHeight">32dp</item>
+        <item name="chipBackgroundColor">?attr/colorSurfaceContainerHighest</item>
         <item name="chipStrokeWidth">0dp</item>
+        <item name="android:textColor">?attr/colorOnSurfaceVariant</item>
         <item name="ensureMinTouchTargetSize">false</item>
         <item name="android:textAppearance">?attr/textAppearanceLabelLarge</item>
+    </style>
+
+    <style name="Widget.SideReply.Switch" parent="Widget.Material3.CompoundButton.MaterialSwitch">
+        <item name="trackDecorationTint">@android:color/transparent</item>
     </style>
 
     <!-- Full-width actions. The stock button is a pill and caps width at 320dp. -->
@@ -137,6 +148,9 @@
     <style name="Widget.SideReply.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
         <item name="android:maxWidth">2000dp</item>
         <item name="android:minHeight">@dimen/touch_target</item>
+        <item name="android:textColor">@color/on_surface_content</item>
+        <item name="iconTint">@color/on_surface_content</item>
+        <item name="strokeColor">@color/outline_stroke</item>
         <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
     </style>
 
@@ -149,6 +163,7 @@
         <item name="android:minWidth">@dimen/touch_target</item>
         <item name="android:minHeight">@dimen/touch_target</item>
         <item name="iconSize">24dp</item>
+        <item name="iconTint">?attr/colorOnSurfaceVariant</item>
         <item name="shapeAppearance">@style/ShapeAppearance.SideReply.Control</item>
     </style>
 
