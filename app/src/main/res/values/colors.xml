@@ -51,7 +51,4 @@
     <color name="md_theme_tertiaryFixedDim">#AACBE3</color>
     <color name="md_theme_onTertiaryFixed">#001E2E</color>
     <color name="md_theme_onTertiaryFixedVariant">#2A4A5F</color>
-
-    <!-- Adaptive icon background. Launchers do not take dynamic color. -->
-    <color name="icon_bg">#096B5A</color>
 </resources>

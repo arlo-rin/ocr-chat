@@ -4,24 +4,21 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Subtle mint halo: adds depth without making the icon read as mostly white. -->
+    <!-- Reply sheet. Kept inside the 66dp adaptive-icon safe circle. -->
     <path
-        android:fillColor="#1F3ED4B2"
-        android:pathData="M54,54m-31,0a31,31 0,1 0,62 0a31,31 0,1 0,-62 0" />
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M57,36H71A10,10 0 0 1 81,46V62A10,10 0 0 1 71,72H57A10,10 0 0 1 47,62V46A10,10 0 0 1 57,36Z" />
     <path
-        android:fillColor="#FFF2B84B"
-        android:pathData="M76,27 L77.4,31.6 L82,33 L77.4,34.4 L76,39 L74.6,34.4 L70,33 L74.6,31.6 Z" />
-    <!-- Keep the white message as the focal point, but let more green breathe. -->
-    <group
-        android:pivotX="54"
-        android:pivotY="51"
-        android:scaleX="0.8"
-        android:scaleY="0.8">
-        <path
-            android:fillColor="#FFFFFFFF"
-            android:pathData="M45,39 L67,39 C71.4,39 75,42.6 75,47 L75,55 C75,59.4 71.4,63 67,63 L54,63 L41,72 L43,63 L41,63 C36.6,63 33,59.4 33,55 L33,47 C33,42.6 36.6,39 41,39 Z" />
-        <path
-            android:fillColor="#FF096B5A"
-            android:pathData="M45,51 m-3,0a3,3 0,1 0,6 0a3,3 0,1 0,-6 0 M54,51 m-3,0a3,3 0,1 0,6 0a3,3 0,1 0,-6 0 M63,51 m-3,0a3,3 0,1 0,6 0a3,3 0,1 0,-6 0" />
-    </group>
+        android:fillColor="#FF096B5A"
+        android:pathData="M56,47H72A2,2 0 0 1 72,51H56A2,2 0 0 1 56,47Z" />
+    <path
+        android:fillColor="#FF127A68"
+        android:pathData="M56,56H65A2,2 0 0 1 65,60H56A2,2 0 0 1 56,56Z" />
+    <!-- Side bubble: white ring and the same mint used by the in-app primary container. -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M27,54a12,12 0 1,1 24,0a12,12 0 1,1 -24,0Z" />
+    <path
+        android:fillColor="#FFA1F2DC"
+        android:pathData="M32.5,54a6.5,6.5 0 1,1 13,0a6.5,6.5 0 1,1 -13,0Z" />
 </vector>
