@@ -17,6 +17,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Color
 import android.graphics.Outline
 import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
@@ -55,6 +56,8 @@ import app.sidereply.root.RootManager
 import app.sidereply.root.RootShell
 import app.sidereply.root.WindowFocusProbe
 import app.sidereply.ui.SheetRootLayout
+import app.sidereply.ui.materialDynamicContext
+import com.google.android.material.color.MaterialColors
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 import kotlin.math.hypot
@@ -246,6 +249,7 @@ class FloatingAssistantService : Service() {
             .setContentTitle(getString(R.string.notification_title))
             .setContentText(getString(R.string.notification_text))
             .setContentIntent(contentIntent)
+            .setColor(themeColor(androidx.appcompat.R.attr.colorPrimary))
             .setOngoing(true)
             .setCategory(Notification.CATEGORY_SERVICE)
             .setVisibility(Notification.VISIBILITY_PRIVATE)
@@ -409,9 +413,10 @@ class FloatingAssistantService : Service() {
     }
 
     private fun buildBubbleView(): View {
-        // The touch window stays comfortably large while the visible dot is deliberately
-        // small and quiet: a 28dp green ball with a 2dp pure-white outer ring.
-        val container = BubbleView(this).apply {
+        // The touch window stays 48dp. The visible mark is a 28dp theme-colored disc
+        // with a 2dp white ring so it stays readable on top of another app.
+        val ui = materialDynamicContext()
+        val container = BubbleView(ui).apply {
             isClickable = true
             isFocusable = true
             contentDescription = getString(R.string.bubble_content_description)
@@ -421,7 +426,7 @@ class FloatingAssistantService : Service() {
             }
         }
 
-        val ball = View(this).apply {
+        val ball = View(ui).apply {
             background = createBubbleDrawable()
             isClickable = false
             elevation = dp(6).toFloat()
@@ -444,17 +449,25 @@ class FloatingAssistantService : Service() {
     }
 
     private fun createBubbleDrawable(): LayerDrawable {
+        val primary = themeColor(androidx.appcompat.R.attr.colorPrimary)
+        val primaryContainer = themeColor(com.google.android.material.R.attr.colorPrimaryContainer)
+        // WeChat's background is outside our theme. Use the darker role so a light
+        // dynamic primary (dark mode) does not disappear on a light chat, and keep
+        // the white ring for dark wallpapers.
+        val fill = if (Color.luminance(primary) <= Color.luminance(primaryContainer)) {
+            primary
+        } else {
+            primaryContainer
+        }
         val whiteRing = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
             setColor(0xFFFFFFFF.toInt())
         }
-        val greenBall = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            intArrayOf(0xFF109A7C.toInt(), 0xFF076B5C.toInt()),
-        ).apply {
+        val ball = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
+            setColor(fill)
         }
-        return LayerDrawable(arrayOf(whiteRing, greenBall)).apply {
+        return LayerDrawable(arrayOf(whiteRing, ball)).apply {
             setLayerInset(
                 1,
                 dp(BUBBLE_RING_DP),
@@ -855,7 +868,7 @@ class FloatingAssistantService : Service() {
     private fun ensureSheet(): SheetRootLayout? {
         sheetView?.let { return it }
         val root = try {
-            LayoutInflater.from(this)
+            LayoutInflater.from(materialDynamicContext())
                 .inflate(R.layout.view_reply_sheet, null) as SheetRootLayout
         } catch (e: Exception) {
             Log.w(TAG, "Could not inflate reply sheet", e)
@@ -864,10 +877,10 @@ class FloatingAssistantService : Service() {
 
         val bars = currentSystemBarInsets()
         root.setPadding(
-            dp(12),
+            dp(16),
             bars.top + dp(8),
-            dp(12),
-            bars.bottom + dp(10),
+            dp(16),
+            bars.bottom + dp(16),
         )
         root.onBackPressed = { closeSheet() }
         root.setOnClickListener { closeSheet() }
@@ -896,7 +909,7 @@ class FloatingAssistantService : Service() {
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.START
-            dimAmount = 0.38f
+            dimAmount = 0.32f
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
             setTitle("SideReplySheet")
             setFitInsetsTypes(0)
@@ -1026,7 +1039,7 @@ class FloatingAssistantService : Service() {
         val list = root.findViewById<LinearLayout>(R.id.list_suggestions)
         list.removeAllViews()
         suggestions.take(3).forEach { suggestion ->
-            val item = LayoutInflater.from(this)
+            val item = LayoutInflater.from(root.context)
                 .inflate(R.layout.item_reply_suggestion, list, false)
             item.findViewById<TextView>(R.id.tv_style).text = suggestion.style
             item.findViewById<TextView>(R.id.tv_text).text = suggestion.text
@@ -1072,12 +1085,13 @@ class FloatingAssistantService : Service() {
         title.text = getString(R.string.sheet_ai_log_title, rounds.last().index)
         rounds.forEachIndexed { index, round ->
             val isNewest = index == rounds.lastIndex && !round.pending && !round.failed
-            list.addView(buildRoundView(round, isNewest))
+            list.addView(buildRoundView(list, round, isNewest))
         }
     }
 
-    private fun buildRoundView(round: AiRound, isNewest: Boolean): View {
-        val item = LayoutInflater.from(this).inflate(R.layout.item_ai_round, null, false)
+    private fun buildRoundView(parent: LinearLayout, round: AiRound, isNewest: Boolean): View {
+        val item = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_ai_round, parent, false)
         item.findViewById<TextView>(R.id.tv_round_meta).text =
             getString(R.string.sheet_round_meta, round.index, round.time)
 
@@ -1095,9 +1109,28 @@ class FloatingAssistantService : Service() {
             isNewest -> getString(R.string.sheet_round_done)
             else -> round.suggestions.take(3).joinToString("\n") { "${it.style}：${it.text}" }
         }
-        item.findViewById<TextView>(R.id.tv_round_ai).text = aiText
+        val aiView = item.findViewById<TextView>(R.id.tv_round_ai)
+        aiView.text = aiText
+        val aiColor = when {
+            round.failed -> MaterialColors.getColor(
+                aiView,
+                androidx.appcompat.R.attr.colorError,
+            )
+            round.pending -> MaterialColors.getColor(
+                aiView,
+                com.google.android.material.R.attr.colorOnSurfaceVariant,
+            )
+            else -> MaterialColors.getColor(
+                aiView,
+                com.google.android.material.R.attr.colorOnSurface,
+            )
+        }
+        aiView.setTextColor(aiColor)
         return item
     }
+
+    private fun themeColor(attr: Int): Int =
+        MaterialColors.getColor(materialDynamicContext(), attr, 0xFF096B5A.toInt())
 
     private fun copyReply(text: String) {
         val clipboard = getSystemService(ClipboardManager::class.java)

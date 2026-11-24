@@ -1,10 +1,10 @@
 package app.sidereply
 
 import android.Manifest
-import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.ColorStateList
+import android.content.res.Configuration
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -13,9 +13,11 @@ import android.view.View
 import android.view.WindowInsets
 import android.widget.EditText
 import android.widget.ScrollView
-import android.widget.Switch
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import app.sidereply.ai.AiClient
 import app.sidereply.ai.AiConfig
 import app.sidereply.ai.AiErrorMessages
@@ -23,19 +25,28 @@ import app.sidereply.ai.EndpointNormalizer
 import app.sidereply.data.AppPreferences
 import app.sidereply.root.RootManager
 import app.sidereply.service.FloatingAssistantService
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.chip.Chip
+import com.google.android.material.color.MaterialColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.materialswitch.MaterialSwitch
+import com.google.android.material.textfield.TextInputLayout
 import java.util.concurrent.Executors
 
-class MainActivity : Activity() {
+class MainActivity : AppCompatActivity() {
+
+    private enum class ButtonRole { FILLED, TONAL, OUTLINED }
 
     private lateinit var prefs: AppPreferences
-    private lateinit var statusPill: TextView
+    private lateinit var statusPill: Chip
     private lateinit var serviceTitle: TextView
     private lateinit var serviceState: TextView
     private lateinit var serviceDesc: TextView
     private lateinit var restrictedHint: TextView
-    private lateinit var serviceButton: TextView
+    private lateinit var serviceButton: MaterialButton
     private lateinit var endpointInput: EditText
     private lateinit var modelInput: EditText
+    private lateinit var apiKeyLayout: TextInputLayout
     private lateinit var apiKeyInput: EditText
     private lateinit var keyHint: TextView
     private lateinit var showKeyButton: TextView
@@ -43,9 +54,9 @@ class MainActivity : Activity() {
     private lateinit var saveButton: TextView
     private lateinit var testButton: TextView
     private lateinit var testResult: TextView
-    private lateinit var wechatOnlySwitch: Switch
+    private lateinit var wechatOnlySwitch: MaterialSwitch
     private lateinit var wechatOnlyCard: View
-    private lateinit var dualAppSwitch: Switch
+    private lateinit var dualAppSwitch: MaterialSwitch
     private lateinit var dualAppCard: View
 
     private val worker = Executors.newSingleThreadExecutor()
@@ -93,6 +104,7 @@ class MainActivity : Activity() {
         serviceButton = findViewById(R.id.btn_service)
         endpointInput = findViewById(R.id.input_endpoint)
         modelInput = findViewById(R.id.input_model)
+        apiKeyLayout = findViewById(R.id.input_api_key_layout)
         apiKeyInput = findViewById(R.id.input_api_key)
         keyHint = findViewById(R.id.tv_key_hint)
         showKeyButton = findViewById(R.id.btn_show_key)
@@ -157,16 +169,16 @@ class MainActivity : Activity() {
     }
 
     private fun configureEdgeToEdge() {
-        window.setDecorFitsSystemWindows(false)
+        WindowCompat.setDecorFitsSystemWindows(window, false)
         window.statusBarColor = Color.TRANSPARENT
         window.navigationBarColor = Color.TRANSPARENT
         window.isNavigationBarContrastEnforced = false
-        window.insetsController?.setSystemBarsAppearance(
-            android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
-                android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-            android.view.WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
-                android.view.WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS,
-        )
+        val night = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+            Configuration.UI_MODE_NIGHT_YES
+        WindowInsetsControllerCompat(window, window.decorView).apply {
+            isAppearanceLightStatusBars = !night
+            isAppearanceLightNavigationBars = !night
+        }
     }
 
     private fun applyWindowInsets() {
@@ -179,11 +191,12 @@ class MainActivity : Activity() {
             val bars = insets.getInsets(
                 WindowInsets.Type.systemBars() or WindowInsets.Type.displayCutout(),
             )
+            val ime = insets.getInsets(WindowInsets.Type.ime())
             view.setPadding(
                 baseLeft,
                 baseTop + bars.top,
                 baseRight,
-                baseBottom + bars.bottom,
+                baseBottom + maxOf(bars.bottom, ime.bottom),
             )
             insets
         }
@@ -202,41 +215,44 @@ class MainActivity : Activity() {
         usageGranted: Boolean,
     ) {
         serviceButton.isEnabled = !rootStarting
-        serviceButton.alpha = if (rootStarting) 0.6f else 1f
 
         if (rootStarting) {
             statusPill.setText(R.string.status_configuring)
-            statusPill.setTextColor(getColor(R.color.accent_dark))
-            statusPill.setBackgroundResource(R.drawable.bg_pill_off)
+            styleStatus(
+                com.google.android.material.R.attr.colorSecondaryContainer,
+                com.google.android.material.R.attr.colorOnSecondaryContainer,
+            )
             serviceTitle.setText(R.string.root_starting)
             serviceState.setText(R.string.root_waiting_for_grant)
-            serviceState.setTextColor(getColor(R.color.accent))
+            serviceState.setTextColor(colorAttr(androidx.appcompat.R.attr.colorPrimary))
             serviceDesc.setText(R.string.service_off_desc)
             restrictedHint.visibility = View.VISIBLE
             serviceButton.setText(R.string.root_starting)
-            serviceButton.setTextColor(getColor(R.color.accent))
-            serviceButton.setBackgroundResource(R.drawable.bg_secondary_button)
+            applyButtonRole(serviceButton, ButtonRole.TONAL)
             return
         }
 
         if (running) {
             statusPill.setText(R.string.status_running)
-            statusPill.setTextColor(getColor(R.color.accent_dark))
-            statusPill.setBackgroundResource(R.drawable.bg_pill_on)
+            styleStatus(
+                com.google.android.material.R.attr.colorPrimaryContainer,
+                com.google.android.material.R.attr.colorOnPrimaryContainer,
+            )
             serviceTitle.setText(R.string.service_on_title)
             serviceState.setText(R.string.service_state_running)
-            serviceState.setTextColor(getColor(R.color.accent))
+            serviceState.setTextColor(colorAttr(androidx.appcompat.R.attr.colorPrimary))
             serviceDesc.setText(R.string.service_on_desc)
             restrictedHint.visibility = View.GONE
             serviceButton.setText(R.string.overlay_stop)
-            serviceButton.setTextColor(getColor(R.color.accent))
-            serviceButton.setBackgroundResource(R.drawable.bg_secondary_button)
+            applyButtonRole(serviceButton, ButtonRole.OUTLINED)
             return
         }
 
         statusPill.setText(R.string.status_stopped)
-        statusPill.setTextColor(getColor(R.color.muted))
-        statusPill.setBackgroundResource(R.drawable.bg_pill_off)
+        styleStatus(
+            com.google.android.material.R.attr.colorSurfaceContainerHigh,
+            com.google.android.material.R.attr.colorOnSurfaceVariant,
+        )
         serviceTitle.setText(R.string.service_off_title)
         val state = when {
             !overlayGranted && !usageGranted -> getString(R.string.service_state_needs_root)
@@ -245,12 +261,11 @@ class MainActivity : Activity() {
             else -> getString(R.string.service_state_ready)
         }
         serviceState.text = state
-        serviceState.setTextColor(getColor(R.color.muted))
+        serviceState.setTextColor(colorAttr(com.google.android.material.R.attr.colorOnSurfaceVariant))
         serviceDesc.setText(R.string.service_off_desc)
         restrictedHint.visibility = View.VISIBLE
         serviceButton.setText(R.string.overlay_start)
-        serviceButton.setTextColor(getColor(R.color.white))
-        serviceButton.setBackgroundResource(R.drawable.bg_primary_button)
+        applyButtonRole(serviceButton, ButtonRole.FILLED)
     }
 
     private fun startRootOverlay() {
@@ -337,7 +352,7 @@ class MainActivity : Activity() {
 
     private fun showRootErrorDialog(error: Throwable) {
         val message = rootSetupErrorMessage(error)
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.root_error_title)
             .setMessage(message)
             .setPositiveButton(android.R.string.ok, null)
@@ -405,7 +420,6 @@ class MainActivity : Activity() {
 
         testing = true
         testButton.isEnabled = false
-        testButton.alpha = 0.6f
         testButton.setText(R.string.test_testing)
         showInlineMessage(getString(R.string.test_testing), isError = false)
 
@@ -415,7 +429,6 @@ class MainActivity : Activity() {
                 if (isFinishing || isDestroyed) return@runOnUiThread
                 testing = false
                 testButton.isEnabled = true
-                testButton.alpha = 1f
                 testButton.setText(R.string.test_connection)
 
                 result.fold(
@@ -482,10 +495,10 @@ class MainActivity : Activity() {
         val hasKey = storedKey.isNotBlank()
         if (hasKey) {
             keyHint.text = getString(R.string.api_key_saved_hint, keyTail(storedKey))
-            apiKeyInput.setHint(R.string.api_key_saved_placeholder)
+            apiKeyLayout.placeholderText = getString(R.string.api_key_saved_placeholder)
         } else {
             keyHint.setText(R.string.api_key_empty_hint)
-            apiKeyInput.setHint(R.string.hint_api_key)
+            apiKeyLayout.placeholderText = getString(R.string.hint_api_key)
         }
         clearKeyButton.visibility = if (hasKey) View.VISIBLE else View.GONE
     }
@@ -525,7 +538,7 @@ class MainActivity : Activity() {
     }
 
     private fun confirmClearKey() {
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setTitle(R.string.clear_key_title)
             .setMessage(R.string.clear_key_message)
             .setNegativeButton(R.string.cancel, null)
@@ -543,7 +556,13 @@ class MainActivity : Activity() {
         testResult.visibility = View.VISIBLE
         testResult.text = message
         testResult.setTextColor(
-            getColor(if (isError) R.color.danger else R.color.accent),
+            colorAttr(
+                if (isError) {
+                    androidx.appcompat.R.attr.colorError
+                } else {
+                    androidx.appcompat.R.attr.colorPrimary
+                },
+            ),
         )
     }
 
@@ -552,6 +571,52 @@ class MainActivity : Activity() {
             val imm = getSystemService(android.view.inputmethod.InputMethodManager::class.java)
             imm.hideSoftInputFromWindow(focus.windowToken, 0)
             focus.clearFocus()
+        }
+    }
+
+    private fun colorAttr(attr: Int): Int =
+        MaterialColors.getColor(this, attr, Color.BLACK)
+
+    private fun styleStatus(containerAttr: Int, labelAttr: Int) {
+        statusPill.chipBackgroundColor = ColorStateList.valueOf(colorAttr(containerAttr))
+        statusPill.setTextColor(colorAttr(labelAttr))
+        statusPill.chipStrokeWidth = 0f
+    }
+
+    private fun applyButtonRole(button: MaterialButton, role: ButtonRole) {
+        val primary = colorAttr(androidx.appcompat.R.attr.colorPrimary)
+        val onPrimary = colorAttr(com.google.android.material.R.attr.colorOnPrimary)
+        val secondaryContainer = colorAttr(com.google.android.material.R.attr.colorSecondaryContainer)
+        val onSecondaryContainer = colorAttr(com.google.android.material.R.attr.colorOnSecondaryContainer)
+        val outline = colorAttr(com.google.android.material.R.attr.colorOutline)
+        val onSurface = colorAttr(com.google.android.material.R.attr.colorOnSurface)
+        val disabledContent = MaterialColors.compositeARGBWithAlpha(onSurface, 97)
+        val disabledContainer = MaterialColors.compositeARGBWithAlpha(onSurface, 31)
+
+        fun stateful(enabled: Int, disabled: Int) = ColorStateList(
+            arrayOf(intArrayOf(-android.R.attr.state_enabled), intArrayOf()),
+            intArrayOf(disabled, enabled),
+        )
+
+        button.elevation = 0f
+        when (role) {
+            ButtonRole.FILLED -> {
+                button.backgroundTintList = stateful(primary, disabledContainer)
+                button.setTextColor(stateful(onPrimary, disabledContent))
+                button.strokeWidth = 0
+            }
+            ButtonRole.TONAL -> {
+                button.backgroundTintList = stateful(secondaryContainer, disabledContainer)
+                button.setTextColor(stateful(onSecondaryContainer, disabledContent))
+                button.strokeWidth = 0
+            }
+            ButtonRole.OUTLINED -> {
+                button.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
+                button.setTextColor(stateful(primary, disabledContent))
+                button.strokeColor = stateful(outline, disabledContent)
+                button.strokeWidth =
+                    (resources.displayMetrics.density + 0.5f).toInt().coerceAtLeast(1)
+            }
         }
     }
 
