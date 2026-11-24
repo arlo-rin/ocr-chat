@@ -7,7 +7,7 @@
     android:layout_marginTop="@dimen/space_tight"
     android:clickable="true"
     android:focusable="true"
-    app:cardBackgroundColor="?attr/colorSurfaceContainerLowest"
+    app:cardBackgroundColor="?attr/colorSurfaceContainerHighest"
     app:contentPadding="@dimen/space_inner">
 
     <LinearLayout

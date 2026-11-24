@@ -32,7 +32,7 @@
                 android:contentDescription="@null"
                 android:padding="8dp"
                 android:src="@drawable/ic_sparkles"
-                app:tint="?attr/colorOnPrimaryContainer" />
+                app:tint="?attr/colorPrimary" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -78,7 +78,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_section"
-            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
             app:contentPadding="@dimen/space_screen">
 
             <LinearLayout
@@ -170,7 +169,7 @@
                         android:contentDescription="@null"
                         android:padding="8dp"
                         android:src="@drawable/ic_chat_bubble"
-                        app:tint="?attr/colorOnPrimaryContainer" />
+                        app:tint="?attr/colorPrimary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -253,8 +252,8 @@
                 android:focusable="false"
                 android:text="@string/openai_compatible"
                 android:textAppearance="?attr/textAppearanceLabelMedium"
-                android:textColor="?attr/colorOnSecondaryContainer"
-                app:chipBackgroundColor="?attr/colorSecondaryContainer"
+                android:textColor="?attr/colorOnSurfaceVariant"
+                app:chipBackgroundColor="?attr/colorSurfaceContainerHighest"
                 app:chipIconVisible="false"
                 app:chipMinHeight="32dp"
                 app:chipStrokeWidth="0dp"

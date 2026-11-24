@@ -451,9 +451,8 @@ class FloatingAssistantService : Service() {
     private fun createBubbleDrawable(): LayerDrawable {
         val primary = themeColor(androidx.appcompat.R.attr.colorPrimary)
         val primaryContainer = themeColor(com.google.android.material.R.attr.colorPrimaryContainer)
-        // WeChat's background is outside our theme. Use the darker role so a light
-        // dynamic primary (dark mode) does not disappear on a light chat, and keep
-        // the white ring for dark wallpapers.
+        // The bubble sits on WeChat, outside our page. Use the darker green so the
+        // ball stays visible on a light chat, and keep the white ring.
         val fill = if (Color.luminance(primary) <= Color.luminance(primaryContainer)) {
             primary
         } else {
