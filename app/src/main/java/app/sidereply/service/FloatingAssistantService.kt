@@ -1,7 +1,6 @@
 package app.sidereply.service
 
 import android.animation.ValueAnimator
-import android.annotation.SuppressLint
 import android.app.KeyguardManager
 import android.app.Notification
 import android.app.NotificationChannel
@@ -15,6 +14,7 @@ import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
+import android.content.res.ColorStateList
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Outline
@@ -30,20 +30,27 @@ import android.os.SystemClock
 import android.util.Log
 import android.view.Gravity
 import android.view.HapticFeedbackConstants
-import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewConfiguration
+import android.view.ViewGroup
 import android.view.WindowInsets
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
-import android.view.inputmethod.EditorInfo
+import android.view.animation.OvershootInterpolator
 import android.view.inputmethod.InputMethodManager
-import android.widget.EditText
 import android.widget.FrameLayout
-import android.widget.LinearLayout
-import android.widget.TextView
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.lifecycle.setViewTreeLifecycleOwner
+import androidx.lifecycle.setViewTreeViewModelStoreOwner
+import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import app.sidereply.MainActivity
 import app.sidereply.R
 import app.sidereply.ai.AiClient
@@ -55,34 +62,29 @@ import app.sidereply.root.RootManager
 import app.sidereply.root.RootShell
 import app.sidereply.root.WindowFocusProbe
 import app.sidereply.ui.SheetRootLayout
+import app.sidereply.ui.sheet.OverlayLifecycleOwner
+import app.sidereply.ui.sheet.ReplySheetContent
+import app.sidereply.ui.sheet.ReplySheetUiState
+import app.sidereply.ui.sheet.SheetAiRound
+import app.sidereply.ui.sheet.SheetPhase
+import app.sidereply.ui.theme.SideReplyTheme
+import app.sidereply.ui.theme.resolveSideReplyColorScheme
 import java.io.ByteArrayOutputStream
 import java.util.concurrent.Executors
 import kotlin.math.hypot
 
 /**
- * A foreground service that owns two non-accessibility overlay windows:
- *  - a tiny draggable bubble, visible only while the target app is foreground;
- *  - a reply sheet shown after a deliberate tap.
+ * Foreground service owning two non-accessibility Material 3 overlay windows:
+ *  - a draggable Material You floating orb, visible only while the target app is foreground;
+ *  - a Compose Material 3 reply bottom sheet shown after a deliberate tap.
  *
  * Foreground detection uses UsageStatsManager (authorised through Root); screenshots
  * run `/system/bin/screencap` through su. The bubble and sheet are removed before the
- * screenshot, so the assistant never captures its own UI. There is no on-device OCR: the
- * compressed screenshot goes to the configured vision model, which reads the chat itself.
+ * screenshot, so the assistant never captures its own UI.
  */
 class FloatingAssistantService : Service() {
 
     private enum class ErrorStage { CONFIG, CAPTURE, VISION, AI }
-
-    /** One request/response exchange with the model, shown in the sheet's conversation log. */
-    private data class AiRound(
-        val index: Int,
-        val imageKb: Int,
-        val style: String,
-        val suggestions: List<ReplySuggestion>,
-        val time: String,
-        val pending: Boolean = false,
-        val failed: Boolean = false,
-    )
 
     private lateinit var prefs: AppPreferences
     private lateinit var windowManager: WindowManager
@@ -97,7 +99,12 @@ class FloatingAssistantService : Service() {
     private val aiClient = AiClient()
 
     private var bubbleView: View? = null
+    private var bubbleOrbView: View? = null
     private var sheetView: SheetRootLayout? = null
+    private var sheetLifecycleOwner: OverlayLifecycleOwner? = null
+    private var sheetUiState by mutableStateOf(ReplySheetUiState())
+    private var lastErrorStage: ErrorStage = ErrorStage.AI
+
     private var currentSession = 0
     private var assistantBusy = false
     private var lastForegroundPackage = ""
@@ -105,19 +112,15 @@ class FloatingAssistantService : Service() {
     private var lastScreenshotJpeg: ByteArray? = null
     private var lastSuggestions: List<ReplySuggestion> = emptyList()
     private var lastRequestedStyle: String = ""
-    /** Every finished exchange with the model in this sheet session, oldest first. */
-    private val aiRounds = mutableListOf<AiRound>()
-    /** The exchange currently in flight; shown in the log before the model answers. */
-    private var pendingRound: AiRound? = null
+    private val aiRounds = mutableListOf<SheetAiRound>()
+    private var pendingRound: SheetAiRound? = null
     private val clockFormat = java.text.SimpleDateFormat("HH:mm", java.util.Locale.getDefault())
     private var lastCaptureAt = 0L
     private var lastUsageEventTimestamp = 0L
     private var lastUsagePollAt = 0L
     private var serviceReady = false
 
-    // Dual-space (应用双开) support: UsageStats cannot see other users, so the focused window
-    // is probed through root instead. The probe is skipped entirely when the device has no
-    // second user, so phones without clones pay nothing.
+    // Dual-space (应用双开) support.
     private var dualSpacePresent = false
     private var focusProbeInFlight = false
     private var nextFocusProbeAt = 0L
@@ -187,9 +190,14 @@ class FloatingAssistantService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP) {
-            stopSelf()
-            return START_NOT_STICKY
+        when (intent?.action) {
+            ACTION_STOP -> {
+                stopSelf()
+                return START_NOT_STICKY
+            }
+            ACTION_REFRESH_THEME -> {
+                refreshOverlayTheme()
+            }
         }
         return if (serviceReady) START_STICKY else START_NOT_STICKY
     }
@@ -214,6 +222,19 @@ class FloatingAssistantService : Service() {
         focusExecutor.shutdownNow()
         stopForeground(STOP_FOREGROUND_REMOVE)
         super.onDestroy()
+    }
+
+    private fun refreshOverlayTheme() {
+        sheetUiState = sheetUiState.copy(
+            themeMode = prefs.themeMode,
+            dynamicColor = prefs.dynamicColor,
+        )
+        if (bubbleView != null) {
+            hideBubble()
+            if (isTargetPackage(lastForegroundPackage) && !assistantBusy) {
+                showBubbleIfAllowed()
+            }
+        }
     }
 
     // ---------------------------------------------------------------------------------
@@ -262,11 +283,6 @@ class FloatingAssistantService : Service() {
         }
     }
 
-    /**
-     * UsageStats gives us the last resumed activity without reading window contents or
-     * connecting to an accessibility service. Querying a short recent window is enough
-     * because we poll continuously while the overlay is running.
-     */
     private fun updateForegroundPackage() {
         val now = System.currentTimeMillis()
         val firstQuery = lastUsagePollAt == 0L
@@ -305,8 +321,6 @@ class FloatingAssistantService : Service() {
     private fun isTargetPackage(pkg: String): Boolean {
         if (pkg.isBlank() || pkg == packageName) return false
         if (pkg == "com.android.systemui" || pkg == "android") return false
-        // Exact match, plus `.clone`-style package names used by some cloners, plus the
-        // dual-space copy, which keeps the package name but runs as another Android user.
         if (isWechatPackage(pkg)) return true
         if (!prefs.showInAllApps) return false
         if (pkg in homePackages) return false
@@ -321,12 +335,6 @@ class FloatingAssistantService : Service() {
     // Dual-space (应用双开) foreground detection
     // ---------------------------------------------------------------------------------
 
-    /**
-     * `应用双开 / 应用分身` copies run either inside a container process or as another Android
-     * user. UsageStats only reports events for the caller's own user, so those copies never
-     * show up there and the bubble stays hidden. A second user can only be detected with root,
-     * therefore the probe is only armed when one actually exists.
-     */
     private fun detectDualSpaces() {
         focusExecutor.execute {
             val users = runCatching { RootShell.runText("pm list users", 8_000L) }.getOrNull()
@@ -344,11 +352,6 @@ class FloatingAssistantService : Service() {
         }
     }
 
-    /**
-     * Reads the globally focused window through root, which also covers windows owned by a
-     * clone user or a clone container. Throttled: the bubble is only allowed to appear after a
-     * probe, so it is polled more often while hidden than while visible.
-     */
     private fun maybeProbeFocusedWindow() {
         if (!dualSpacePresent || !prefs.dualAppSupport) return
         if (assistantBusy || focusProbeInFlight) return
@@ -383,7 +386,7 @@ class FloatingAssistantService : Service() {
     }
 
     // ---------------------------------------------------------------------------------
-    // Bubble window
+    // Material 3 Floating Orb Window
     // ---------------------------------------------------------------------------------
 
     private fun showBubbleIfAllowed() {
@@ -403,14 +406,14 @@ class FloatingAssistantService : Service() {
         } catch (e: Exception) {
             Log.w(TAG, "Unable to add floating bubble", e)
             bubbleView = null
+            bubbleOrbView = null
             bubbleParams = null
             Toast.makeText(this, R.string.toast_overlay_failed, Toast.LENGTH_SHORT).show()
         }
     }
 
     private fun buildBubbleView(): View {
-        // The touch window stays comfortably large while the visible dot is deliberately
-        // small and quiet: a 28dp green ball with a 2dp pure-white outer ring.
+        val scheme = resolveSideReplyColorScheme(this, prefs.themeMode, prefs.dynamicColor)
         val container = BubbleView(this).apply {
             isClickable = true
             isFocusable = true
@@ -421,8 +424,11 @@ class FloatingAssistantService : Service() {
             }
         }
 
-        val ball = View(this).apply {
-            background = createBubbleDrawable()
+        val orb = FrameLayout(this).apply {
+            background = createBubbleDrawable(
+                ringColor = scheme.surface.copy(alpha = 0.92f).toArgb(),
+                fillColor = scheme.primary.toArgb(),
+            )
             isClickable = false
             elevation = dp(6).toFloat()
             outlineProvider = object : android.view.ViewOutlineProvider() {
@@ -432,8 +438,25 @@ class FloatingAssistantService : Service() {
             }
             clipToOutline = true
         }
+
+        val glyph = ImageView(this).apply {
+            setImageResource(R.drawable.ic_bubble_sparkle)
+            imageTintList = ColorStateList.valueOf(scheme.onPrimary.toArgb())
+            scaleType = ImageView.ScaleType.CENTER_INSIDE
+            isClickable = false
+        }
+        orb.addView(
+            glyph,
+            FrameLayout.LayoutParams(
+                dp(BUBBLE_GLYPH_DP),
+                dp(BUBBLE_GLYPH_DP),
+                Gravity.CENTER,
+            ),
+        )
+
+        bubbleOrbView = orb
         container.addView(
-            ball,
+            orb,
             FrameLayout.LayoutParams(
                 dp(BUBBLE_VISIBLE_DP),
                 dp(BUBBLE_VISIBLE_DP),
@@ -443,26 +466,28 @@ class FloatingAssistantService : Service() {
         return container
     }
 
-    private fun createBubbleDrawable(): LayerDrawable {
-        val whiteRing = GradientDrawable().apply {
+    private fun createBubbleDrawable(ringColor: Int, fillColor: Int): LayerDrawable {
+        val outerRing = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
-            setColor(0xFFFFFFFF.toInt())
+            setColor(ringColor)
         }
-        val greenBall = GradientDrawable(
-            GradientDrawable.Orientation.TL_BR,
-            intArrayOf(0xFF109A7C.toInt(), 0xFF076B5C.toInt()),
-        ).apply {
+        val innerFill = GradientDrawable().apply {
             shape = GradientDrawable.OVAL
+            setColor(fillColor)
         }
-        return LayerDrawable(arrayOf(whiteRing, greenBall)).apply {
-            setLayerInset(
-                1,
-                dp(BUBBLE_RING_DP),
-                dp(BUBBLE_RING_DP),
-                dp(BUBBLE_RING_DP),
-                dp(BUBBLE_RING_DP),
-            )
+        return LayerDrawable(arrayOf(outerRing, innerFill)).apply {
+            val inset = dp(BUBBLE_RING_DP)
+            setLayerInset(1, inset, inset, inset, inset)
         }
+    }
+
+    private fun animateBubbleScale(target: Float) {
+        bubbleOrbView?.animate()
+            ?.scaleX(target)
+            ?.scaleY(target)
+            ?.setDuration(if (target < 1f) 90L else 180L)
+            ?.setInterpolator(if (target < 1f) DecelerateInterpolator() else OvershootInterpolator(1.6f))
+            ?.start()
     }
 
     private fun buildBubbleParams(): WindowManager.LayoutParams {
@@ -506,6 +531,7 @@ class FloatingAssistantService : Service() {
                 touchStartRawX = event.rawX
                 touchStartRawY = event.rawY
                 bubbleDragged = false
+                animateBubbleScale(0.88f)
                 return true
             }
 
@@ -531,6 +557,7 @@ class FloatingAssistantService : Service() {
             }
 
             MotionEvent.ACTION_UP -> {
+                animateBubbleScale(1f)
                 if (bubbleDragged) {
                     prefs.bubbleY = params.y
                     snapBubbleToEdge(view, params)
@@ -541,6 +568,7 @@ class FloatingAssistantService : Service() {
             }
 
             MotionEvent.ACTION_CANCEL -> {
+                animateBubbleScale(1f)
                 bubbleDragged = false
                 return true
             }
@@ -558,7 +586,7 @@ class FloatingAssistantService : Service() {
         }
 
         ValueAnimator.ofInt(params.x, targetX).apply {
-            duration = 180
+            duration = 200
             interpolator = DecelerateInterpolator()
             addUpdateListener { animator ->
                 if (bubbleView !== view || bubbleView?.isAttachedToWindow != true) {
@@ -586,6 +614,7 @@ class FloatingAssistantService : Service() {
     private fun hideBubble() {
         val view = bubbleView ?: return
         bubbleView = null
+        bubbleOrbView = null
         bubbleParams = null
         try {
             windowManager.removeViewImmediate(view)
@@ -602,7 +631,7 @@ class FloatingAssistantService : Service() {
         )
 
     // ---------------------------------------------------------------------------------
-    // Capture + OCR + AI flow
+    // Capture + Vision AI flow
     // ---------------------------------------------------------------------------------
 
     private fun startAssistantFlow() {
@@ -693,17 +722,13 @@ class FloatingAssistantService : Service() {
         startVision(bitmap, session)
     }
 
-    /**
-     * The compressed screenshot itself goes to the model; there is no on-device OCR anymore.
-     * The JPEG is kept for the session so 「换一组」 can resend it without capturing again.
-     */
     private fun startVision(bitmap: Bitmap, session: Int) {
         if (ensureSheet() == null) {
             bitmap.recycle()
             failWithoutSheet()
             return
         }
-        renderLoading(R.string.sheet_generating, keepImageNote = false)
+        renderLoading(R.string.sheet_generating)
         val jpeg = compressForUpload(bitmap)
         bitmap.recycle()
         if (jpeg == null) {
@@ -714,11 +739,10 @@ class FloatingAssistantService : Service() {
         lastScreenshotJpeg = jpeg
         lastSuggestions = emptyList()
         lastRequestedStyle = ""
-        renderLoading(R.string.sheet_generating, keepImageNote = true)
+        renderLoading(R.string.sheet_generating)
         requestSuggestions(session = session, image = jpeg)
     }
 
-    /** Downscales to a sane upload size and re-encodes as JPEG; vision models read this fine. */
     private fun compressForUpload(source: Bitmap): ByteArray? {
         val maxDimension = 1600
         val longest = maxOf(source.width, source.height)
@@ -758,8 +782,8 @@ class FloatingAssistantService : Service() {
             showError(AiErrorMessages.forThrowable(this, e), ErrorStage.AI)
             return
         }
-        // Show the request in the conversation log right away, before the model answers.
-        pendingRound = AiRound(
+
+        pendingRound = SheetAiRound(
             index = aiRounds.size + 1,
             imageKb = image.size / 1024,
             style = style,
@@ -767,7 +791,7 @@ class FloatingAssistantService : Service() {
             time = clockFormat.format(java.util.Date()),
             pending = true,
         )
-        sheetView?.let { renderAiLog(it) }
+        syncRoundsState()
 
         worker.execute {
             val result = runCatching {
@@ -801,7 +825,7 @@ class FloatingAssistantService : Service() {
         val session = currentSession
         val previous = lastSuggestions
         val style = styleOverride ?: lastRequestedStyle
-        renderLoading(R.string.sheet_generating, keepImageNote = true)
+        renderLoading(R.string.sheet_generating)
         requestSuggestions(
             session = session,
             previous = previous,
@@ -812,31 +836,22 @@ class FloatingAssistantService : Service() {
 
     private fun regenerateWithStyle() {
         if (lastScreenshotJpeg == null) return
-        val style = readStyleInput()
+        val style = sheetUiState.styleInput
+            .replace(Regex("\\s+"), " ")
+            .trim()
+            .take(40)
         hideSheetKeyboard()
         retryAi(style)
     }
 
-    private fun readStyleInput(): String =
-        sheetView
-            ?.findViewById<EditText>(R.id.input_style)
-            ?.text
-            ?.toString()
-            ?.replace(Regex("\\s+"), " ")
-            ?.trim()
-            ?.take(40)
-            .orEmpty()
-
     private fun hideSheetKeyboard() {
-        val input = sheetView?.findViewById<EditText>(R.id.input_style) ?: return
+        val root = sheetView ?: return
         getSystemService(InputMethodManager::class.java)
-            ?.hideSoftInputFromWindow(input.windowToken, 0)
-        input.clearFocus()
+            ?.hideSoftInputFromWindow(root.windowToken, 0)
     }
 
     private fun retryCapture() {
         closeSheet(restoreBubble = false)
-        // This is an explicit retry, so do not let the ordinary double-tap guard bounce it.
         lastCaptureAt = 0L
         mainHandler.postDelayed({ startAssistantFlow() }, CAPTURE_DELAY_MS)
     }
@@ -848,55 +863,80 @@ class FloatingAssistantService : Service() {
     }
 
     // ---------------------------------------------------------------------------------
-    // Reply sheet
+    // Material 3 Compose Reply Sheet Overlay
     // ---------------------------------------------------------------------------------
 
-    @SuppressLint("InflateParams")
     private fun ensureSheet(): SheetRootLayout? {
         sheetView?.let { return it }
-        val root = try {
-            LayoutInflater.from(this)
-                .inflate(R.layout.view_reply_sheet, null) as SheetRootLayout
-        } catch (e: Exception) {
-            Log.w(TAG, "Could not inflate reply sheet", e)
-            return null
+        val bars = currentSystemBarInsets()
+        sheetUiState = ReplySheetUiState(
+            phase = SheetPhase.LOADING,
+            loadingMessageRes = R.string.sheet_generating,
+            rounds = emptyList(),
+            suggestions = emptyList(),
+            styleInput = "",
+            themeMode = prefs.themeMode,
+            dynamicColor = prefs.dynamicColor,
+            topInsetPx = bars.top,
+            bottomInsetPx = bars.bottom,
+        )
+
+        val owner = OverlayLifecycleOwner().apply { onCreate() }
+        val root = SheetRootLayout(this).apply {
+            isFocusable = true
+            isFocusableInTouchMode = true
+            onBackPressed = { closeSheet() }
+            setViewTreeLifecycleOwner(owner)
+            setViewTreeSavedStateRegistryOwner(owner)
+            setViewTreeViewModelStoreOwner(owner)
         }
 
-        val bars = currentSystemBarInsets()
-        root.setPadding(
-            dp(12),
-            bars.top + dp(8),
-            dp(12),
-            bars.bottom + dp(10),
-        )
-        root.onBackPressed = { closeSheet() }
-        root.setOnClickListener { closeSheet() }
-        root.findViewById<View>(R.id.sheet_card).setOnClickListener { /* consume */ }
-        root.findViewById<View>(R.id.btn_close).setOnClickListener { closeSheet() }
-        root.findViewById<View>(R.id.btn_open_settings).setOnClickListener {
-            closeSheet(restoreBubble = false)
-            openSettings()
-        }
-        root.findViewById<EditText>(R.id.input_style).setOnEditorActionListener { _, actionId, _ ->
-            if (actionId == EditorInfo.IME_ACTION_DONE) {
-                regenerateWithStyle()
-                true
-            } else {
-                false
+        val composeView = ComposeView(this).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
+            setContent {
+                SideReplyTheme(
+                    themeMode = sheetUiState.themeMode,
+                    dynamicColor = sheetUiState.dynamicColor,
+                ) {
+                    ReplySheetContent(
+                        state = sheetUiState,
+                        onClose = { closeSheet() },
+                        onCopySuggestion = { text -> copyReply(text) },
+                        onStyleInputChange = { next ->
+                            sheetUiState = sheetUiState.copy(styleInput = next)
+                        },
+                        onRegenerate = { regenerateWithStyle() },
+                        onRetry = {
+                            when (lastErrorStage) {
+                                ErrorStage.AI -> retryAi()
+                                else -> retryCapture()
+                            }
+                        },
+                        onOpenSettings = {
+                            closeSheet(restoreBubble = false)
+                            openSettings()
+                        },
+                    )
+                }
             }
         }
+        root.addView(
+            composeView,
+            FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT,
+            ),
+        )
 
         val params = WindowManager.LayoutParams(
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.MATCH_PARENT,
             WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-            WindowManager.LayoutParams.FLAG_DIM_BEHIND or
-                WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+            WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
                 WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED,
             PixelFormat.TRANSLUCENT,
         ).apply {
             gravity = Gravity.BOTTOM or Gravity.START
-            dimAmount = 0.38f
             softInputMode = WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE
             setTitle("SideReplySheet")
             setFitInsetsTypes(0)
@@ -906,22 +946,16 @@ class FloatingAssistantService : Service() {
 
         try {
             windowManager.addView(root, params)
+            owner.onResume()
         } catch (e: Exception) {
             Log.w(TAG, "Unable to add reply sheet", e)
+            owner.onDestroy()
             return null
         }
 
+        sheetLifecycleOwner = owner
         sheetView = root
         root.post { root.requestFocus() }
-        val card = root.findViewById<View>(R.id.sheet_card)
-        root.alpha = 0f
-        card.translationY = dp(22).toFloat()
-        root.animate().alpha(1f).setDuration(130).start()
-        card.animate()
-            .translationY(0f)
-            .setDuration(210)
-            .setInterpolator(DecelerateInterpolator())
-            .start()
         return root
     }
 
@@ -929,16 +963,19 @@ class FloatingAssistantService : Service() {
         currentSession++
         hideSheetKeyboard()
         val root = sheetView
+        val owner = sheetLifecycleOwner
         sheetView = null
+        sheetLifecycleOwner = null
         lastScreenshotJpeg = null
         lastSuggestions = emptyList()
         lastRequestedStyle = ""
         aiRounds.clear()
         pendingRound = null
         assistantBusy = false
+
+        owner?.onDestroy()
         if (root != null) {
             try {
-                root.animate().cancel()
                 windowManager.removeViewImmediate(root)
             } catch (e: Exception) {
                 Log.w(TAG, "Unable to remove reply sheet", e)
@@ -949,70 +986,40 @@ class FloatingAssistantService : Service() {
         }
     }
 
-    private fun renderLoading(
-        messageRes: Int,
-        keepImageNote: Boolean,
-    ) {
-        val root = sheetView ?: return
-        root.findViewById<View>(R.id.group_error).visibility = View.GONE
-        root.findViewById<View>(R.id.group_suggestions).visibility = View.GONE
-        root.findViewById<View>(R.id.group_loading).visibility = View.VISIBLE
-        root.findViewById<TextView>(R.id.tv_loading).setText(messageRes)
-        if (!keepImageNote) {
-            root.findViewById<View>(R.id.group_note).visibility = View.GONE
-        }
-        renderAiLog(root)
+    private fun renderLoading(messageRes: Int) {
+        sheetUiState = sheetUiState.copy(
+            phase = SheetPhase.LOADING,
+            loadingMessageRes = messageRes,
+            rounds = currentRoundsSnapshot(),
+        )
     }
 
     private fun showError(message: String, stage: ErrorStage) {
-        val root = ensureSheet()
-        if (root == null) {
+        if (ensureSheet() == null) {
             failWithoutSheet()
             return
         }
         if (!assistantBusy) assistantBusy = true
         hideBubble()
+        lastErrorStage = stage
 
-        root.findViewById<View>(R.id.group_loading).visibility = View.GONE
-        root.findViewById<View>(R.id.group_suggestions).visibility = View.GONE
-        root.findViewById<View>(R.id.group_error).visibility = View.VISIBLE
-        root.findViewById<TextView>(R.id.tv_error).text = message
-
-        // The exchange that just failed stays in the log, marked as such, so the record reads
-        // like a real conversation instead of silently dropping the request.
         val failedRound = pendingRound
         if (failedRound != null) {
             pendingRound = null
             aiRounds += failedRound.copy(pending = false, failed = true)
         }
-        renderAiLog(root)
 
-        val retryButton = root.findViewById<TextView>(R.id.btn_retry)
-        val settingsButton = root.findViewById<TextView>(R.id.btn_open_settings)
-        if (stage == ErrorStage.CONFIG) {
-            retryButton.visibility = View.GONE
-            settingsButton.visibility = View.VISIBLE
-        } else {
-            retryButton.visibility = View.VISIBLE
-            retryButton.setText(R.string.sheet_retry)
-            retryButton.setOnClickListener {
-                when (stage) {
-                    ErrorStage.AI -> retryAi()
-                    else -> retryCapture()
-                }
-            }
-            settingsButton.visibility =
-                if (stage == ErrorStage.AI) View.VISIBLE else View.GONE
-        }
+        sheetUiState = sheetUiState.copy(
+            phase = SheetPhase.ERROR,
+            errorMessage = message,
+            rounds = currentRoundsSnapshot(),
+            showRetry = stage != ErrorStage.CONFIG,
+            showOpenSettings = stage == ErrorStage.CONFIG || stage == ErrorStage.AI,
+        )
     }
 
     private fun renderSuggestions(suggestions: List<ReplySuggestion>) {
-        val root = sheetView ?: return
-        root.findViewById<View>(R.id.group_loading).visibility = View.GONE
-        root.findViewById<View>(R.id.group_error).visibility = View.GONE
-        root.findViewById<View>(R.id.group_suggestions).visibility = View.VISIBLE
-
-        val finished = (pendingRound ?: AiRound(
+        val finished = (pendingRound ?: SheetAiRound(
             index = aiRounds.size + 1,
             imageKb = (lastScreenshotJpeg?.size ?: 0) / 1024,
             style = lastRequestedStyle,
@@ -1021,83 +1028,20 @@ class FloatingAssistantService : Service() {
         )).copy(suggestions = suggestions, pending = false)
         pendingRound = null
         aiRounds += finished
-        renderAiLog(root)
 
-        val list = root.findViewById<LinearLayout>(R.id.list_suggestions)
-        list.removeAllViews()
-        suggestions.take(3).forEach { suggestion ->
-            val item = LayoutInflater.from(this)
-                .inflate(R.layout.item_reply_suggestion, list, false)
-            item.findViewById<TextView>(R.id.tv_style).text = suggestion.style
-            item.findViewById<TextView>(R.id.tv_text).text = suggestion.text
-            val copyButton = item.findViewById<TextView>(R.id.btn_copy)
-            val copy = {
-                copyReply(suggestion.text)
-                copyButton.setText(R.string.sheet_copied)
-                mainHandler.postDelayed({
-                    if (copyButton.isAttachedToWindow) {
-                        copyButton.setText(R.string.sheet_copy)
-                    }
-                }, 1400)
-            }
-            item.setOnClickListener { copy() }
-            copyButton.setOnClickListener { copy() }
-            list.addView(item)
-        }
-
-        root.findViewById<View>(R.id.btn_regenerate).setOnClickListener {
-            regenerateWithStyle()
-        }
+        sheetUiState = sheetUiState.copy(
+            phase = SheetPhase.SUGGESTIONS,
+            suggestions = suggestions,
+            rounds = currentRoundsSnapshot(),
+        )
     }
 
-    /**
-     * Draws the exchange with the model as a chat log: the request appears as soon as it is
-     * sent, the answer replaces the pending line. Old rounds keep their full text; the newest
-     * one points at the suggestion cards below, which are the same three replies plus copy
-     * buttons.
-     */
-    private fun renderAiLog(root: SheetRootLayout) {
-        val group = root.findViewById<View>(R.id.group_note)
-        val list = root.findViewById<LinearLayout>(R.id.list_ai_rounds)
-        val title = root.findViewById<TextView>(R.id.tv_note_title)
-        list.removeAllViews()
-
-        val rounds = aiRounds + listOfNotNull(pendingRound)
-        if (rounds.isEmpty()) {
-            group.visibility = View.GONE
-            return
-        }
-        group.visibility = View.VISIBLE
-        list.visibility = View.VISIBLE
-        title.text = getString(R.string.sheet_ai_log_title, rounds.last().index)
-        rounds.forEachIndexed { index, round ->
-            val isNewest = index == rounds.lastIndex && !round.pending && !round.failed
-            list.addView(buildRoundView(round, isNewest))
-        }
+    private fun syncRoundsState() {
+        sheetUiState = sheetUiState.copy(rounds = currentRoundsSnapshot())
     }
 
-    private fun buildRoundView(round: AiRound, isNewest: Boolean): View {
-        val item = LayoutInflater.from(this).inflate(R.layout.item_ai_round, null, false)
-        item.findViewById<TextView>(R.id.tv_round_meta).text =
-            getString(R.string.sheet_round_meta, round.index, round.time)
-
-        val userText = buildString {
-            append(getString(R.string.sheet_round_user, round.imageKb))
-            if (round.style.isNotBlank()) {
-                append(" · ").append(getString(R.string.sheet_round_style, round.style))
-            }
-        }
-        item.findViewById<TextView>(R.id.tv_round_user).text = userText
-
-        val aiText = when {
-            round.pending -> getString(R.string.sheet_round_pending)
-            round.failed -> getString(R.string.sheet_round_failed)
-            isNewest -> getString(R.string.sheet_round_done)
-            else -> round.suggestions.take(3).joinToString("\n") { "${it.style}：${it.text}" }
-        }
-        item.findViewById<TextView>(R.id.tv_round_ai).text = aiText
-        return item
-    }
+    private fun currentRoundsSnapshot(): List<SheetAiRound> =
+        aiRounds.toList() + listOfNotNull(pendingRound)
 
     private fun copyReply(text: String) {
         val clipboard = getSystemService(ClipboardManager::class.java)
@@ -1124,10 +1068,6 @@ class FloatingAssistantService : Service() {
 
     private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
 
-    /**
-     * Touch handling is custom (drag + tap), so this view owns its gesture logic and
-     * still routes taps through performClick for accessibility services.
-     */
     private inner class BubbleView(context: Context) : FrameLayout(context) {
         override fun onTouchEvent(event: MotionEvent): Boolean = handleBubbleTouch(this, event)
 
@@ -1139,6 +1079,7 @@ class FloatingAssistantService : Service() {
 
     companion object {
         const val ACTION_STOP = "app.sidereply.action.STOP"
+        const val ACTION_REFRESH_THEME = "app.sidereply.action.REFRESH_THEME"
 
         @Volatile
         var isRunning: Boolean = false
@@ -1151,18 +1092,17 @@ class FloatingAssistantService : Service() {
         private const val INITIAL_USAGE_LOOKBACK_MS = 10 * 60 * 1000L
         private const val RECENT_USAGE_LOOKBACK_MS = 15_000L
 
-        /** Focused-window probing: cheap enough to run every couple of seconds. */
         private const val FOCUS_PROBE_HIDDEN_MS = 1_800L
         private const val FOCUS_PROBE_VISIBLE_MS = 5_000L
         private const val FOCUS_PROBE_FAILURE_BACKOFF_MS = 60_000L
 
-        /** `pm list users` prints one `UserInfo{0:owner:13}` per user. */
         private val USER_INFO = Regex("""UserInfo\{(\d+):""")
 
         private const val MIN_CAPTURE_INTERVAL_MS = 1_100L
         private const val CAPTURE_DELAY_MS = 180L
         private const val BUBBLE_WINDOW_DP = 48
-        private const val BUBBLE_VISIBLE_DP = 28
+        private const val BUBBLE_VISIBLE_DP = 34
+        private const val BUBBLE_GLYPH_DP = 17
         private const val BUBBLE_RING_DP = 2
     }
 }

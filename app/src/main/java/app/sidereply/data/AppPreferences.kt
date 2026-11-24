@@ -34,9 +34,29 @@ class AppPreferences(context: Context) {
         get() = prefs.getBoolean(KEY_DUAL_APP_SUPPORT, true)
         set(value) = prefs.edit().putBoolean(KEY_DUAL_APP_SUPPORT, value).apply()
 
+    enum class ThemeMode(val storageValue: Int) {
+        SYSTEM(0),
+        LIGHT(1),
+        DARK(2),
+        ;
+
+        companion object {
+            fun fromStorage(value: Int): ThemeMode =
+                entries.firstOrNull { it.storageValue == value } ?: SYSTEM
+        }
+    }
+
     var bubbleY: Int
         get() = prefs.getInt(KEY_BUBBLE_Y, -1)
         set(value) = prefs.edit().putInt(KEY_BUBBLE_Y, value).apply()
+
+    var themeMode: ThemeMode
+        get() = ThemeMode.fromStorage(prefs.getInt(KEY_THEME_MODE, ThemeMode.SYSTEM.storageValue))
+        set(value) = prefs.edit().putInt(KEY_THEME_MODE, value.storageValue).apply()
+
+    var dynamicColor: Boolean
+        get() = prefs.getBoolean(KEY_DYNAMIC_COLOR, true)
+        set(value) = prefs.edit().putBoolean(KEY_DYNAMIC_COLOR, value).apply()
 
     fun apiKey(): String {
         val encrypted = prefs.getString(KEY_API_KEY_CIPHER, null) ?: return ""
@@ -74,5 +94,7 @@ class AppPreferences(context: Context) {
         private const val KEY_SHOW_ALL_APPS = "show_in_all_apps"
         private const val KEY_DUAL_APP_SUPPORT = "dual_app_support"
         private const val KEY_BUBBLE_Y = "bubble_y"
+        private const val KEY_THEME_MODE = "theme_mode"
+        private const val KEY_DYNAMIC_COLOR = "dynamic_color"
     }
 }
