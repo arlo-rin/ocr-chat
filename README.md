@@ -13,6 +13,7 @@
   </p>
 
   <p>
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
     <img src="https://img.shields.io/badge/Version-v0.5.1--root-006A60.svg" alt="Version">
     <img src="https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84.svg" alt="Platform">
     <img src="https://img.shields.io/badge/Built%20with-Jetpack%20Compose%20%26%20Material%203-4285F4.svg" alt="Built with">
@@ -26,7 +27,8 @@
     <a href="#-root-commands">Root Commands</a> ·
     <a href="#-model-setup">Model Setup</a> ·
     <a href="#-build--test">Build &amp; Test</a> ·
-    <a href="#-architecture">Architecture</a>
+    <a href="#-architecture">Architecture</a> ·
+    <a href="#-license">License</a>
   </p>
 </div>
 
@@ -168,3 +170,9 @@ app/src/main/java/app/sidereply/
 * **声明权限**：`INTERNET`、`SYSTEM_ALERT_WINDOW`、`PACKAGE_USAGE_STATS`、`FOREGROUND_SERVICE`、`FOREGROUND_SERVICE_SPECIAL_USE`、`POST_NOTIFICATIONS`；**无 `BIND_ACCESSIBILITY_SERVICE`**，不申请存储、相机、通讯录或开机自启权限。
 * **隐私与安全**：整张截图仅在内存中压缩为 JPEG 后发送至你配置的 AI 服务，关闭面板即释放内存引用；若当前聊天窗口开启了 `FLAG_SECURE`，系统截屏可能返回黑屏。
 * **免责声明**：本项目为个人工具原型，不隶属于腾讯/微信或任何 Root 管理器；使用 Root 权限与第三方视觉模型前请自行审阅源码并评估对话隐私。
+
+---
+
+## 📄 License
+
+本项目基于 [MIT License](LICENSE) 开源。

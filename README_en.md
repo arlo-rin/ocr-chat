@@ -13,6 +13,7 @@
   </p>
 
   <p>
+    <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License">
     <img src="https://img.shields.io/badge/Version-v0.5.1--root-006A60.svg" alt="Version">
     <img src="https://img.shields.io/badge/Platform-Android%2011%2B-3DDC84.svg" alt="Platform">
     <img src="https://img.shields.io/badge/Built%20with-Jetpack%20Compose%20%26%20Material%203-4285F4.svg" alt="Built with">
@@ -26,7 +27,8 @@
     <a href="#-root-commands">Root Commands</a> ·
     <a href="#-model-setup">Model Setup</a> ·
     <a href="#-build--test">Build &amp; Test</a> ·
-    <a href="#-architecture">Architecture</a>
+    <a href="#-architecture">Architecture</a> ·
+    <a href="#-license">License</a>
   </p>
 </div>
 
@@ -168,3 +170,9 @@ app/src/main/java/app/sidereply/
 * **Permissions**: `INTERNET`, `SYSTEM_ALERT_WINDOW`, `PACKAGE_USAGE_STATS`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_SPECIAL_USE`, `POST_NOTIFICATIONS`. **No `BIND_ACCESSIBILITY_SERVICE`**, and no storage, camera, contacts, or boot-completed permissions.
 * **Privacy & Security**: Full-screen JPEG snapshots exist only in memory during the request and are cleared when the sheet closes; screens marked `FLAG_SECURE` may capture black frames.
 * **Disclaimer**: Personal utility prototype, not affiliated with Tencent/WeChat or any Root manager. Review the source code before granting Root privileges and verify AI replies before sending.
+
+---
+
+## 📄 License
+
+Licensed under the [MIT License](LICENSE).
