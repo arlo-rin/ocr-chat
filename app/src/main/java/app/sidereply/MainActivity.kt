@@ -224,7 +224,7 @@ class MainActivity : AppCompatActivity() {
             )
             serviceTitle.setText(R.string.root_starting)
             serviceState.setText(R.string.root_waiting_for_grant)
-            serviceState.setTextColor(colorAttr(androidx.appcompat.R.attr.colorPrimary))
+            serviceState.setTextColor(colorAttr(com.google.android.material.R.attr.colorOnSurfaceVariant))
             serviceDesc.setText(R.string.service_off_desc)
             restrictedHint.visibility = View.VISIBLE
             serviceButton.setText(R.string.root_starting)
@@ -240,7 +240,7 @@ class MainActivity : AppCompatActivity() {
             )
             serviceTitle.setText(R.string.service_on_title)
             serviceState.setText(R.string.service_state_running)
-            serviceState.setTextColor(colorAttr(androidx.appcompat.R.attr.colorPrimary))
+            serviceState.setTextColor(colorAttr(com.google.android.material.R.attr.colorOnSurfaceVariant))
             serviceDesc.setText(R.string.service_on_desc)
             restrictedHint.visibility = View.GONE
             serviceButton.setText(R.string.overlay_stop)
@@ -560,7 +560,7 @@ class MainActivity : AppCompatActivity() {
                 if (isError) {
                     androidx.appcompat.R.attr.colorError
                 } else {
-                    androidx.appcompat.R.attr.colorPrimary
+                    com.google.android.material.R.attr.colorOnSurface
                 },
             ),
         )
@@ -612,7 +612,7 @@ class MainActivity : AppCompatActivity() {
             }
             ButtonRole.OUTLINED -> {
                 button.backgroundTintList = ColorStateList.valueOf(Color.TRANSPARENT)
-                button.setTextColor(stateful(primary, disabledContent))
+                button.setTextColor(stateful(onSurface, disabledContent))
                 button.strokeColor = stateful(outline, disabledContent)
                 button.strokeWidth =
                     (resources.displayMetrics.density + 0.5f).toInt().coerceAtLeast(1)

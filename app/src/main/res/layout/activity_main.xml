@@ -32,7 +32,7 @@
                 android:contentDescription="@null"
                 android:padding="8dp"
                 android:src="@drawable/ic_sparkles"
-                app:tint="?attr/colorOnPrimary" />
+                app:tint="?attr/colorOnPrimaryContainer" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -58,7 +58,7 @@
 
             <com.google.android.material.chip.Chip
                 android:id="@+id/tv_status_pill"
-                style="@style/Widget.Material3.Chip.Assist"
+                style="@style/Widget.SideReply.Chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="false"
@@ -78,12 +78,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_section"
-            app:cardBackgroundColor="?attr/colorPrimary"
-            app:cardCornerRadius="@dimen/shape_extra_large"
-            app:cardElevation="0dp"
-            app:contentPadding="20dp"
-            app:rippleColor="@android:color/transparent"
-            app:strokeWidth="0dp">
+            app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+            app:contentPadding="@dimen/space_screen">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -91,19 +87,11 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/app_name"
-                    android:textAppearance="?attr/textAppearanceLabelLarge"
-                    android:textColor="?attr/colorOnPrimary" />
-
-                <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="@dimen/space_tight"
                     android:text="@string/hero_title"
-                    android:textAppearance="?attr/textAppearanceHeadlineMedium"
-                    android:textColor="?attr/colorOnPrimary" />
+                    android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -111,94 +99,34 @@
                     android:layout_marginTop="@dimen/space_tight"
                     android:text="@string/hero_body"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
-                    android:textColor="?attr/colorOnPrimary" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
 
-                <com.google.android.material.card.MaterialCardView
-                    android:layout_width="match_parent"
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/space_screen"
-                    app:cardBackgroundColor="?attr/colorSurface"
-                    app:cardCornerRadius="@dimen/shape_large"
-                    app:cardElevation="0dp"
-                    app:contentPadding="@dimen/space_inner"
-                    app:strokeWidth="0dp">
+                    android:background="@drawable/bg_incoming"
+                    android:paddingStart="@dimen/space_inner"
+                    android:paddingTop="@dimen/space_tight"
+                    android:paddingEnd="@dimen/space_inner"
+                    android:paddingBottom="@dimen/space_tight"
+                    android:text="@string/hero_preview_incoming"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurface" />
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="@string/preview_peer"
-                            android:textAppearance="?attr/textAppearanceLabelMedium"
-                            android:textColor="?attr/colorOnSurfaceVariant" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/space_tight"
-                            android:background="@drawable/bg_incoming"
-                            android:paddingStart="@dimen/space_inner"
-                            android:paddingTop="@dimen/space_tight"
-                            android:paddingEnd="@dimen/space_inner"
-                            android:paddingBottom="@dimen/space_tight"
-                            android:text="@string/hero_preview_incoming"
-                            android:textAppearance="?attr/textAppearanceBodyMedium"
-                            android:textColor="?attr/colorOnSurface" />
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="@dimen/space_tight"
-                            android:background="@drawable/bg_ai_preview"
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:padding="@dimen/space_inner">
-
-                            <TextView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:background="@drawable/bg_icon_soft"
-                                android:gravity="center"
-                                android:text="@string/ai_short"
-                                android:textAppearance="?attr/textAppearanceLabelMedium"
-                                android:textColor="?attr/colorOnPrimaryContainer" />
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="@dimen/space_inner"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="@string/hero_preview_label"
-                                    android:textAppearance="?attr/textAppearanceLabelMedium"
-                                    android:textColor="?attr/colorPrimary" />
-
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:text="@string/hero_preview_reply"
-                                    android:textAppearance="?attr/textAppearanceBodyMedium"
-                                    android:textColor="?attr/colorOnSurface" />
-                            </LinearLayout>
-
-                            <androidx.appcompat.widget.AppCompatImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:layout_marginStart="@dimen/space_tight"
-                                android:contentDescription="@null"
-                                android:src="@drawable/ic_copy"
-                                app:tint="?attr/colorPrimary" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="end"
+                    android:layout_marginTop="@dimen/space_tight"
+                    android:background="@drawable/bg_ai_preview"
+                    android:paddingStart="@dimen/space_inner"
+                    android:paddingTop="@dimen/space_tight"
+                    android:paddingEnd="@dimen/space_inner"
+                    android:paddingBottom="@dimen/space_tight"
+                    android:text="@string/hero_preview_reply"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -206,7 +134,7 @@
                     android:layout_marginTop="@dimen/space_inner"
                     android:text="@string/hero_privacy_line"
                     android:textAppearance="?attr/textAppearanceLabelMedium"
-                    android:textColor="?attr/colorOnPrimary" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -317,7 +245,7 @@
                 android:textColor="?attr/colorOnSurface" />
 
             <com.google.android.material.chip.Chip
-                style="@style/Widget.Material3.Chip.Assist"
+                style="@style/Widget.SideReply.Chip"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checkable="false"
@@ -569,9 +497,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/space_section"
-            app:cardBackgroundColor="?attr/colorSecondaryContainer"
-            app:contentPadding="@dimen/space_screen"
-            app:strokeWidth="0dp">
+            app:contentPadding="@dimen/space_screen">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -583,7 +509,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/guide_title"
                     android:textAppearance="?attr/textAppearanceTitleSmall"
-                    android:textColor="?attr/colorOnSecondaryContainer" />
+                    android:textColor="?attr/colorOnSurface" />
 
                 <TextView
                     android:layout_width="match_parent"
@@ -591,7 +517,7 @@
                     android:layout_marginTop="@dimen/space_tight"
                     android:text="@string/guide_body"
                     android:textAppearance="?attr/textAppearanceBodyMedium"
-                    android:textColor="?attr/colorOnSecondaryContainer" />
+                    android:textColor="?attr/colorOnSurfaceVariant" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 

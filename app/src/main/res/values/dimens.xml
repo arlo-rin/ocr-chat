@@ -5,6 +5,8 @@
     <dimen name="space_inner">12dp</dimen>
     <dimen name="space_tight">8dp</dimen>
     <dimen name="touch_target">48dp</dimen>
-    <dimen name="shape_large">16dp</dimen>
-    <dimen name="shape_extra_large">28dp</dimen>
+    <!-- Three corner levels: controls, cards, and the bottom sheet. -->
+    <dimen name="shape_control">12dp</dimen>
+    <dimen name="shape_card">16dp</dimen>
+    <dimen name="shape_sheet">28dp</dimen>
 </resources>

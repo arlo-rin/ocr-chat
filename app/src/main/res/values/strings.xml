@@ -94,7 +94,7 @@
     <string name="guide_body">在微信聊天界面，点一下侧边小球 → Root 截屏 → 把截图发给识图模型 → 点选一条建议即可复制。长按小球可以拖动位置，松手后会自动贴边。</string>
     <string name="privacy_title">隐私说明</string>
     <string name="privacy_body">截图通过 Root 在本机生成，压缩后作为图片发送给你自己配置的 AI 服务，不写入磁盘、不进入相册；侧答不再做本地 OCR，也不使用无障碍服务、不读取微信控件树。请勿在高度敏感的对话中使用，并自行核对 AI 生成的内容。</string>
-    <string name="privacy_footer">Root 模式 · 不使用无障碍 · 识图模型 · v0.4.3</string>
+    <string name="privacy_footer">Root 模式 · 不使用无障碍 · 识图模型 · v0.4.4</string>
 
     <string name="sheet_title">侧答建议</string>
     <string name="sheet_subtitle">AI 生成 · 发送前请核对</string>

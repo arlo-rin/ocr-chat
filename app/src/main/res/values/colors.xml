@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-      Material 3 tonal-spot roles, standard contrast, seed #0B7A67
-      (the previous accent). Android 12+ replaces these at runtime
-      when dynamic color is available.
+      Fixed Material 3 tonal-spot roles, standard contrast, seed #0B7A67.
+      Dynamic color is intentionally not applied, so light and dark stay
+      on this palette instead of the wallpaper.
     -->
     <color name="md_theme_primary">#096B5A</color>
     <color name="md_theme_onPrimary">#FFFFFF</color>

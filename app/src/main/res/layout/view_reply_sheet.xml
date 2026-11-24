@@ -15,8 +15,8 @@
         android:layout_gravity="bottom"
         android:clickable="true"
         android:focusable="true"
-        app:cardBackgroundColor="?attr/colorSurfaceContainerLow"
-        app:cardCornerRadius="@dimen/shape_extra_large"
+        app:cardBackgroundColor="?attr/colorSurfaceContainerHigh"
+        app:cardCornerRadius="@dimen/shape_sheet"
         app:cardElevation="3dp"
         app:rippleColor="@android:color/transparent"
         app:strokeWidth="0dp">
@@ -51,7 +51,7 @@
                     android:contentDescription="@null"
                     android:padding="8dp"
                     android:src="@drawable/ic_sparkles"
-                    app:tint="?attr/colorOnPrimary" />
+                    app:tint="?attr/colorOnPrimaryContainer" />
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -114,7 +114,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/sheet_ai_log_title_empty"
                             android:textAppearance="?attr/textAppearanceLabelLarge"
-                            android:textColor="?attr/colorPrimary" />
+                            android:textColor="?attr/colorOnSurfaceVariant" />
 
                         <LinearLayout
                             android:id="@+id/list_ai_rounds"
